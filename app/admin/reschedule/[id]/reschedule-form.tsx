@@ -17,7 +17,7 @@ import { useRouter } from "next/navigation"
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json())
 
-type BookingSelected = {
+export type BookingSelected = {
     id: number;
     client: {
         name: string;
@@ -27,7 +27,7 @@ type BookingSelected = {
     };
     date: string; // formato ISO string ou "YYYY-MM-DD"
     time: string; // formato "HH:mm"
-    services: string[];
+    services: readonly string[];
     total: number;
     depositPaid: number;
     status: string;
@@ -36,6 +36,7 @@ type BookingSelected = {
 }
 
 export default function RescheduleForm({ booking }: { booking: BookingSelected }) {
+    
     const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date())
     const [selectedTime, setSelectedTime] = useState<string>("")
 
