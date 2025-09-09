@@ -13,6 +13,11 @@ export default async function RescheduleBooking({
 
     const book = await getBooking(id)
 
+    if (!book) {
+        // You can customize this fallback UI as needed
+        return <div>Booking not found.</div>
+    }
+
     return (
         <RescheduleForm booking={book} />
     )
