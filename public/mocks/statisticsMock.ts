@@ -193,3 +193,31 @@ export const getStatusColor = (status: string) => {
       return "bg-gray-100 text-gray-800 border-gray-200";
   }
 };
+
+export const scheduleDateMock = [
+  // example/mock data - keep your existing mock or replace it
+  {
+    id: "1",
+    client: { name: "Alice Silva", phone: "+351 912345678", email: "alice@example.com", avatar: null },
+    date: new Date().toISOString(),
+    time: "10:00",
+    services: ["Wash", "Polish"],
+    vehicle: "Toyota Corolla",
+    total: 50,
+    depositPaid: 20,
+    status: "pending",
+    notes: "Allergic to wax"
+  },
+  {
+    id: "2",
+    client: { name: "Bruno Costa", phone: "+351 923456789", email: "bruno@example.com", avatar: null },
+    date: new Date().toISOString(),
+    time: "14:00",
+    services: ["Interior Cleaning"],
+    vehicle: "Honda Civic",
+    total: 30,
+    depositPaid: 0,
+    status: "confirmed",
+    notes: ""
+  }
+];
