@@ -1,6 +1,6 @@
 "use client"
 
-import BookingRow from "./BookingRow";
+import BookingRow from "./bookin-row";
 
 type Props = {
     schedules: any[];
