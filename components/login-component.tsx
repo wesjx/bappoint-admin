@@ -5,10 +5,10 @@ import Link from "next/link";
 export default function LoginComponent() {
     return (
         <div className="flex flex-col gap-4 items-center justify-center">
-            <h1 className="font-mono text-5xl font-bold flex gap-2 items-center justify-center">
-             bAppoint.ie
+            <h1 className="text-5xl font-bold flex gap-2 items-center justify-center">
+                bAppoint.ie
             </h1>
-            <p className=" font-roboto text-2xl pb-2.5">
+            <p className="text-2xl pb-2.5">
                 Admin page
             </p>
 
