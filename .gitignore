@@ -1,3 +1,7 @@
 node_modules
 .next
 eslint.config.mjs
+
+# clerk configuration (can include secrets)
+/.clerk/
+.env
