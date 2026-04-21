@@ -3,6 +3,7 @@ import { GeistSans } from 'geist/font/sans'
 import { GeistMono } from 'geist/font/mono'
 import './globals.css'
 import { ClerkProvider } from '@clerk/nextjs'
+import { CompanyProvider } from '@/contexts/company-context'
 
 export const metadata: Metadata = {
   title: 'bAppoint',
@@ -16,19 +17,20 @@ export default function RootLayout({
 }>) {
   return (
     <ClerkProvider>
-
-      <html lang="en">
-        <head>
-          <style>{`
+      <CompanyProvider>
+        <html lang="en">
+          <head>
+            <style>{`
 html {
   font-family: ${GeistSans.style.fontFamily};
   --font-sans: ${GeistSans.variable};
   --font-mono: ${GeistMono.variable};
 }
         `}</style>
-        </head>
-        <body>{children}</body>
-      </html>
+          </head>
+          <body>{children}</body>
+        </html>
+      </CompanyProvider>
     </ClerkProvider>
   )
 }
