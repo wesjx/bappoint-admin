@@ -1,10 +1,13 @@
-import { Car, Settings } from "lucide-react";
+"use client"
+import { Settings } from "lucide-react";
 import { Badge } from "./ui/badge";
 import { Show, UserButton } from "@clerk/nextjs";
 import { Button } from "./ui/button";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 export default function () {
+  const usePathName = usePathname();
   return (
     <header className="px-4 lg:px-6 h-16 flex items-center bg-white border-b border-slate-200">
       <div className="flex items-center">
@@ -14,7 +17,7 @@ export default function () {
         </Badge>
       </div>
       <div className="ml-auto flex items-center space-x-4">
-      <div>
+        <div>
           <Show when="signed-out">
           </Show>
           <Show when="signed-in">
@@ -25,11 +28,13 @@ export default function () {
             }} />
           </Show>
         </div>
-        <Button size="icon">
-          <Link href='/admin/settings'>
-            <Settings />
-          </Link>
-        </Button>
+        {usePathName === "/admin" && (
+          <Button size="icon">
+            <Link href='/admin/settings'>
+              <Settings />
+            </Link>
+          </Button>
+        )}
       </div>
     </header>
   )

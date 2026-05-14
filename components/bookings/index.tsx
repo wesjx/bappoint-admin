@@ -5,7 +5,7 @@ import { useState, useCallback } from "react";
 import { BookingsFilters } from "./booking-filters";
 import { BookingsTable } from "./booking-table";
 import { BookingDialog } from "./booking-dialog";
-import { useBookings } from "@/hooks/use-booking";
+import { useBookings } from "@/hooks/use-appointments";
 
 
 export default function BookingsPanel() {
