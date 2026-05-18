@@ -3,6 +3,15 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { useAuth } from "@clerk/nextjs";
 
+interface CompanySettings {
+  id: string;
+  appointmentInterval: string;
+  maxCancellationInterval: number;
+  offDays: any[];
+  operatingHours: any[];
+  services: any[]; 
+}
+
 interface Company {
   id: string;
   clerkUserId: string;
@@ -11,7 +20,7 @@ interface Company {
   phone: string;
   address: string;
   slug: string;
-  settings: object;
+  settings: CompanySettings;
 }
 
 interface CompanyContextType {
@@ -36,7 +45,7 @@ export function CompanyProvider({ children }: { children: React.ReactNode }) {
       const token = await getToken();
 
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/companies/clerk/${userId}`,
+        `${process.env.NEXT_PUBLIC_API_URL}/companies/clerk/${userId}`,
         { headers: { "Authorization": `Bearer ${token}` } }
       );
 
