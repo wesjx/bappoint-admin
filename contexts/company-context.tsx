@@ -2,26 +2,7 @@
 
 import { createContext, useContext, useEffect, useState } from "react";
 import { useAuth } from "@clerk/nextjs";
-
-interface CompanySettings {
-  id: string;
-  appointmentInterval: string;
-  maxCancellationInterval: number;
-  offDays: any[];
-  operatingHours: any[];
-  services: any[]; 
-}
-
-interface Company {
-  id: string;
-  clerkUserId: string;
-  name: string;
-  email: string;
-  phone: string;
-  address: string;
-  slug: string;
-  settings: CompanySettings;
-}
+import type { Company } from "@/types/Company";
 
 interface CompanyContextType {
   company: Company | null;
