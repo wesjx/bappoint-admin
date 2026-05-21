@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
 import { Textarea } from "../ui/textarea";
+import { useCompany } from "@/contexts/company-context";
 
 type SettingsServicesProps = {
     config: ConfigType,
@@ -29,6 +30,8 @@ export default function GeneralFunctions({ config, setConfig }: SettingsServices
             },
         }))
     }
+
+    const {company, loading} = useCompany();
     return (
         <>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -40,28 +43,28 @@ export default function GeneralFunctions({ config, setConfig }: SettingsServices
                         <div>
                             <Label>Company Name</Label>
                             <Input
-                                value={config.company.name}
+                                value={company?.name}
                                 onChange={(e) => updateCompany("name", e.target.value)}
                             />
                         </div>
                         <div>
                             <Label>Phone</Label>
                             <Input
-                                value={config.company.phone}
+                                value={company?.phone}
                                 onChange={(e) => updateCompany("phone", e.target.value)}
                             />
                         </div>
                         <div>
                             <Label>Email</Label>
                             <Input
-                                value={config.company.email}
+                                value={company?.email}
                                 onChange={(e) => updateCompany("email", e.target.value)}
                             />
                         </div>
                         <div>
                             <Label>Address</Label>
                             <Textarea
-                                value={config.company.address}
+                                value={company?.address}
                                 onChange={(e) => updateCompany("address", e.target.value)}
                             />
                         </div>
@@ -86,8 +89,8 @@ export default function GeneralFunctions({ config, setConfig }: SettingsServices
                             <Label>Maximum Cancellation Time (hours)</Label>
                             <Input
                                 type="number"
-                                value={config.company.maxCancellationTime}
-                                onChange={(e) => updateCompany("maxCancellationTime", Number.parseInt(e.target.value))}
+                                value={company?.settings?.maxCancellationInterval || 0}
+                                onChange={(e) => updateCompany("maxCancellationInterval", Number.parseInt(e.target.value))}
                                 min="0"
                             />
                         </div>
