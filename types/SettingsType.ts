@@ -1,83 +1,68 @@
-export type SettingsType = {
-  businessHours: {
-    [key: string]: {
-      active: boolean;
-      start: string;
-      end: string;
-    };
-  };
-  appointmentInterval: number;
-  daysOff: {
-    id: number;
-    date: string;
-    reason: string;
-    type: string;
-  }[];
-  services: {
-    id: number;
-    name: string;
-    price: number;
-    duration: number;
-    active: boolean;
-  }[];
-  notifications: {
-    customerEmail: boolean;
-    customerSMS: boolean;
-    adminEmail: boolean;
-    reminderAdvance: number;
-  };
-  payment: {
-    depositPercentage: number;
-    acceptedMethods: string[];
-  };
-  company: {
-    name: string;
-    phone: string;
-    email: string;
-    address: string;
-    maxCancellationTime: number;
-  };
+export type WeekDay =
+  | "MONDAY"
+  | "TUESDAY"
+  | "WEDNESDAY"
+  | "THURSDAY"
+  | "FRIDAY"
+  | "SATURDAY"
+  | "SUNDAY";
+
+export type AppointmentInterval =
+  | "MINUTES_15"
+  | "MINUTES_30"
+  | "MINUTES_45"
+  | "MINUTES_60";
+
+export type OffDayType =
+  | "HOLIDAY"
+  | "VACATION"
+  | "PERSONAL_LEAVE"
+  | "OTHER";
+
+export interface CompanyType {
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+  address: string;
 }
 
-export type ConfigType = {
-  operatingHours: {
-    monday: { active: boolean; start: string; end: string }
-    tuesday: { active: boolean; start: string; end: string }
-    wednesday: { active: boolean; start: string; end: string }
-    thursday: { active: boolean; start: string; end: string }
-    friday: { active: boolean; start: string; end: string }
-    saturday: { active: boolean; start: string; end: string }
-    sunday: { active: boolean; start: string; end: string }
-  }
-  appointmentIntervals: number
-  offDays: {
-    id: number
-    date: string
-    reason: string
-    type: string
-  }[]
-  services: {
-    id: number
-    name: string
-    price: number
-    duration: number
-    active: boolean
-  }[]
-  notifications: {
-    customerEmail: boolean
-    customerSMS: boolean
-    adminEmail: boolean
-    reminderAdvance: number
-  }
-  payment: {
-    depositPercentage: number
-    acceptedMethods: string[]
-  }
-  company: {
-    name: string
-    phone: string
-    email: string
-    address: string
-    maxCancellationTime: number
-  }
+export interface OperatingHoursType {
+  id?: string;
+  weekday: WeekDay;
+  isActive: boolean;
+  startTime: string;
+  endTime: string;
+  lunchStartTime?: string | null;
+  lunchEndTime?: string | null;
+}
+
+export interface OffDayTypeModel {
+  id?: string;
+  date: string;
+  reason: string;
+  offDaysType: OffDayType;
+}
+
+export interface ServiceType {
+  id?: string;
+  name: string;
+  description?: string;
+  durationInMinutes: number;
+  price: number;
+  isActive: boolean;
+}
+
+export interface SettingsDataType {
+  id?: string;
+  appointmentInterval: AppointmentInterval;
+  maxCancellationInterval: number;
+  offDays: OffDayTypeModel[];
+  operatingHours: OperatingHoursType[];
+  services: ServiceType[];
+}
+
+export interface ConfigType {
+  company: CompanyType;
+  settings: SettingsDataType;
 }
