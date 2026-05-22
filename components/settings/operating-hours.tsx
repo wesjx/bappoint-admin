@@ -1,103 +1,197 @@
-import { weekDays } from "@/public/mocks/setting-mock"
-import { Badge } from "../ui/badge"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui/card"
-import { Input } from "../ui/input"
-import { Label } from "../ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select"
-import { Switch } from "../ui/switch"
-import { ConfigType } from "@/types/SettingsType"
+"use client";
 
-type OperatingHoursProps = {
-  config: ConfigType;
-  setConfig: React.Dispatch<React.SetStateAction<ConfigType>>
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
+import { AppointmentInterval, OperatingHoursType, WeekDay } from "@/types/SettingsType";
+
+interface OperatingHoursProps {
+  operatingHours: OperatingHoursType[];
+  appointmentInterval: AppointmentInterval;
+  onChangeOperatingHours: (hours: OperatingHoursType[]) => void;
+  onChangeAppointmentInterval: (interval: AppointmentInterval) => void;
 }
 
-export default function OperatingHours({ config, setConfig }: OperatingHoursProps) {
-    const updateOperatingHours = (day: string, field: string, value: any) => {
-        setConfig((prev: ConfigType) => ({
-            ...prev,
-            operatingHours: {
-                ...prev.operatingHours,
-                [day]: {
-                    ...prev.operatingHours[day as keyof typeof prev.operatingHours],
-                    [field]: value,
-                },
-            },
-        }))
-    }
+const DAYS: { key: WeekDay; label: string }[] = [
+  { key: "MONDAY", label: "Monday" },
+  { key: "TUESDAY", label: "Tuesday" },
+  { key: "WEDNESDAY", label: "Wednesday" },
+  { key: "THURSDAY", label: "Thursday" },
+  { key: "FRIDAY", label: "Friday" },
+  { key: "SATURDAY", label: "Saturday" },
+  { key: "SUNDAY", label: "Sunday" },
+];
+
+type OperatingHoursField =
+  | "isActive"
+  | "startTime"
+  | "endTime"
+  | "lunchStartTime"
+  | "lunchEndTime";
+
+const DEFAULT_START_TIME = "08:00";
+const DEFAULT_END_TIME = "18:00";
+
+export default function OperatingHours({
+  operatingHours,
+  appointmentInterval,
+  onChangeOperatingHours,
+  onChangeAppointmentInterval,
+}: OperatingHoursProps) {
+  const formatTimeForInput = (time?: string | null) => {
+    if (!time) return "";
+    return time.slice(0, 5);
+  };
+
+  const normalizeTimeForBackend = (time: string) => {
+    if (!time) return "";
+    return time.length === 5 ? `${time}:00` : time;
+  };
+
+  const getScheduleByDay = (weekday: WeekDay): OperatingHoursType => {
+    const found = operatingHours.find((item) => item.weekday === weekday);
 
     return (
-        <>
-            <Card className="space-y-6">
-                <CardHeader>
-                    <CardTitle>Operating Hours</CardTitle>
-                    <CardDescription>Configure opening hours for each day of the week</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                    {weekDays.map((day) => {
-                        const schedule = config.operatingHours[day.key as keyof typeof config.operatingHours]
-                        return (
-                            <div key={day.key} className="flex items-center space-x-4 p-4 border border-slate-200 rounded-lg">
-                                <div className="w-32">
-                                    <Label className="font-medium">{day.label}</Label>
-                                </div>
-                                <Switch
-                                    checked={schedule.active}
-                                    onCheckedChange={(checked) => updateOperatingHours(day.key, "active", checked)}
-                                />
-                                {schedule.active && (
-                                    <>
-                                        <div className="flex items-center space-x-2">
-                                            <Label className="text-sm">Start:</Label>
-                                            <Input
-                                                type="time"
-                                                value={schedule.start}
-                                                onChange={(e) => updateOperatingHours(day.key, "start", e.target.value)}
-                                                className="w-32"
-                                            />
-                                        </div>
-                                        <div className="flex items-center space-x-2">
-                                            <Label className="text-sm">End:</Label>
-                                            <Input
-                                                type="time"
-                                                value={schedule.end}
-                                                onChange={(e) => updateOperatingHours(day.key, "end", e.target.value)}
-                                                className="w-32"
-                                            />
-                                        </div>
-                                    </>
-                                )}
-                                {!schedule.active && (
-                                    <Badge variant="secondary" className="bg-red-100 text-red-800">
-                                        Closed
-                                    </Badge>
-                                )}
-                            </div>
-                        )
-                    })}
-                    <div className="pt-4 border-t">
-                        <div className="flex items-center space-x-4">
-                            <Label className="font-medium">Appointment Interval:</Label>
-                            <Select
-                                value={config.appointmentIntervals.toString()}
-                                onValueChange={(value) =>
-                                    setConfig((prev: any ) => ({ ...prev, appointmentIntervals: Number.parseInt(value) }))
-                                }
-                            >
-                                <SelectTrigger className="w-32">
-                                    <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="15">15 min</SelectItem>
-                                    <SelectItem value="30">30 min</SelectItem>
-                                    <SelectItem value="45">45 min</SelectItem>
-                                    <SelectItem value="60">60 min</SelectItem>
-                                </SelectContent>
-                            </Select>
-                        </div>
-                    </div>
-                </CardContent>
-            </Card>
-        </>
-    )
+      found ?? {
+        weekday,
+        isActive: false,
+        startTime: DEFAULT_START_TIME,
+        endTime: DEFAULT_END_TIME,
+        lunchStartTime: null,
+        lunchEndTime: null,
+      }
+    );
+  };
+
+  const updateOperatingHours = (
+    weekday: WeekDay,
+    field: OperatingHoursField,
+    value: boolean | string | null
+  ) => {
+    const exists = operatingHours.some((item) => item.weekday === weekday);
+
+    if (!exists) {
+      const newItem: OperatingHoursType = {
+        weekday,
+        isActive: field === "isActive" ? Boolean(value) : false,
+        startTime:
+          field === "startTime" && typeof value === "string"
+            ? normalizeTimeForBackend(value)
+            : DEFAULT_START_TIME,
+        endTime:
+          field === "endTime" && typeof value === "string"
+            ? normalizeTimeForBackend(value)
+            : DEFAULT_END_TIME,
+        lunchStartTime:
+          field === "lunchStartTime" && typeof value === "string"
+            ? normalizeTimeForBackend(value)
+            : null,
+        lunchEndTime:
+          field === "lunchEndTime" && typeof value === "string"
+            ? normalizeTimeForBackend(value)
+            : null,
+      };
+
+      onChangeOperatingHours([...operatingHours, newItem]);
+      return;
+    }
+
+    const updated = operatingHours.map((item) =>
+      item.weekday === weekday
+        ? {
+            ...item,
+            [field]:
+              typeof value === "string" &&
+              (field === "startTime" ||
+                field === "endTime" ||
+                field === "lunchStartTime" ||
+                field === "lunchEndTime")
+                ? normalizeTimeForBackend(value)
+                : value,
+          }
+        : item
+    );
+
+    onChangeOperatingHours(updated);
+  };
+
+  return (
+    <div className="space-y-6">
+      <div className="space-y-4">
+        {DAYS.map((day) => {
+          const schedule = getScheduleByDay(day.key);
+
+          return (
+            <div
+              key={day.key}
+              className="flex items-center space-x-4 p-4 border border-slate-200 rounded-lg"
+            >
+              <div className="w-32">
+                <Label className="font-medium">{day.label}</Label>
+              </div>
+
+              <Switch
+                checked={schedule.isActive}
+                onCheckedChange={(checked) =>
+                  updateOperatingHours(day.key, "isActive", checked)
+                }
+              />
+
+              {schedule.isActive ? (
+                <>
+                  <div className="flex items-center space-x-2">
+                    <Label className="text-sm">Start:</Label>
+                    <Input
+                      type="time"
+                      value={formatTimeForInput(schedule.startTime)}
+                      onChange={(e) =>
+                        updateOperatingHours(day.key, "startTime", e.target.value)
+                      }
+                      className="w-32"
+                    />
+                  </div>
+
+                  <div className="flex items-center space-x-2">
+                    <Label className="text-sm">End:</Label>
+                    <Input
+                      type="time"
+                      value={formatTimeForInput(schedule.endTime)}
+                      onChange={(e) =>
+                        updateOperatingHours(day.key, "endTime", e.target.value)
+                      }
+                      className="w-32"
+                    />
+                  </div>
+                </>
+              ) : (
+                <Badge variant="secondary" className="bg-red-100 text-red-800">
+                  Closed
+                </Badge>
+              )}
+            </div>
+          );
+        })}
+      </div>
+
+      <div className="pt-6 border-t border-slate-200">
+        <div className="flex items-center gap-4">
+          <Label className="font-medium">Appointment Interval:</Label>
+
+          <select
+            value={appointmentInterval}
+            onChange={(e) =>
+              onChangeAppointmentInterval(e.target.value as AppointmentInterval)
+            }
+            className="h-10 rounded-md border border-slate-300 px-3 text-sm"
+          >
+            <option value="MINUTES_15">15 min</option>
+            <option value="MINUTES_30">30 min</option>
+            <option value="MINUTES_45">45 min</option>
+            <option value="MINUTES_60">60 min</option>
+          </select>
+        </div>
+      </div>
+    </div>
+  );
 }
