@@ -1,16 +1,21 @@
+export interface CompanySettings {
+  id: string;
+  appointmentInterval: string;
+  maxCancellationInterval: number;
+  offDays: any[];
+  operatingHours: any[];
+  services: any[]; 
+}
+
 export interface Company {
-  id: string
-  slug: string
-  stripeAccountId: string
-  name: string
-  email: string
-  phone: string
-  address: string
-  clerkUserId: string
-      settings: {
-        appointmentInterval: string
-        maxCancellationInterval: number
-    }
+  id: string;
+  clerkUserId: string;
+  name: string;
+  email: string;
+  phone: string;
+  address: string;
+  slug: string;
+  settings: CompanySettings;
 }
 
 export type CompanyFormData = Omit<Company, "id">
