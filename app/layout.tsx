@@ -4,6 +4,7 @@ import { GeistMono } from 'geist/font/mono'
 import './globals.css'
 import { ClerkProvider } from '@clerk/nextjs'
 import { CompanyProvider } from '@/contexts/company-context'
+import { Toaster } from "sonner";
 
 export const metadata: Metadata = {
   title: 'bAppoint',
@@ -18,6 +19,7 @@ export default function RootLayout({
   return (
     <ClerkProvider>
       <CompanyProvider>
+        <Toaster richColors position="top-right" />
         <html lang="en">
           <head>
             <style>{`
