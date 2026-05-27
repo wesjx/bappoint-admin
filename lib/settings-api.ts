@@ -1,10 +1,11 @@
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 
-async function apiFetch(path: string, options: RequestInit) {
+async function apiFetch(path: string, options: RequestInit, token: string) {
   const res = await fetch(`${BASE_URL}${path}`, {
     ...options,
     headers: {
       "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
       ...(options.headers ?? {}),
     },
   });
@@ -18,75 +19,35 @@ async function apiFetch(path: string, options: RequestInit) {
   return res.json();
 }
 
-// Company
+// ─── Company (inclui settings dentro) ────────────────────────────────────────
 
 export interface UpdateCompanyPayload {
   name: string;
   email: string;
   phone: string;
   address: string;
+  clerkUserId: string;
+  slug: string;
+  stripeAccountId: string;
+  settings: {
+    appointmentInterval: string;
+    maxCancellationInterval: number;
+  };
 }
 
-export function updateCompany(companyId: string, data: UpdateCompanyPayload) {
-  return apiFetch(`/companies/update/${companyId}`, {
-    method: "PUT",
-    body: JSON.stringify(data),
-  });
-}
-
-// Settings
-
-export interface UpdateSettingsPayload {
-  appointmentInterval: string;
-  maxCancellationInterval: number;
-}
-
-export function updateSettings(companyId: string, data: UpdateSettingsPayload) {
-  return apiFetch(`/companies/${companyId}/settings/update`, {
-    method: "PUT",
-    body: JSON.stringify(data),
-  });
-}
-
-// Off Days
-
-export interface OffDayPayload {
-  date: string;
-  reason: string;
-  offDaysType: string;
-}
-
-export function createOffDay(companyId: string, data: OffDayPayload) {
-  return apiFetch(`/companies/${companyId}/settings/off_days/create`, {
-    method: "POST",
-    body: JSON.stringify(data),
-  });
-}
-
-export function updateOffDay(
+export function updateCompany(
   companyId: string,
-  offDayId: string,
-  data: OffDayPayload
+   data: UpdateCompanyPayload,
+  token: string
 ) {
   return apiFetch(
-    `/companies/${companyId}/settings/off_days/update/${offDayId}`,
-    {
-      method: "PUT",
-      body: JSON.stringify(data),
-    }
+    `/companies/update/${companyId}`,
+    { method: "PUT", body: JSON.stringify(data) },
+    token
   );
 }
 
-export function deleteOffDay(companyId: string, offDayId: string) {
-  return apiFetch(
-    `/companies/${companyId}/settings/off_days/delete/${offDayId}`,
-    {
-      method: "DELETE",
-    }
-  );
-}
-
-// Operating Hours
+// ─── Operating Hours ──────────────────────────────────────────────────────────
 
 export interface OperatingHoursPayload {
   weekday: string;
@@ -99,73 +60,105 @@ export interface OperatingHoursPayload {
 
 export function createOperatingHours(
   companyId: string,
-  data: OperatingHoursPayload
+   data: OperatingHoursPayload,
+  token: string
 ) {
   return apiFetch(
     `/companies/${companyId}/settings/operating_hours/create`,
-    {
-      method: "POST",
-      body: JSON.stringify(data),
-    }
+    { method: "POST", body: JSON.stringify(data) },
+    token
   );
 }
 
 export function updateOperatingHours(
   companyId: string,
   operatingHoursId: string,
-  data: OperatingHoursPayload
+   data: OperatingHoursPayload,
+  token: string
 ) {
   return apiFetch(
     `/companies/${companyId}/settings/operating_hours/update/${operatingHoursId}`,
-    {
-      method: "PUT",
-      body: JSON.stringify(data),
-    }
+    { method: "PUT", body: JSON.stringify(data) },
+    token
   );
 }
 
-export function deleteOperatingHours(
+// ─── Off Days ─────────────────────────────────────────────────────────────────
+
+export interface CreateOffDayPayload {
+  date: string;
+  reason: string;
+  offDaysType: string;
+}
+
+export function createOffDay(
   companyId: string,
-  operatingHoursId: string
+   data: CreateOffDayPayload,
+  token: string
 ) {
   return apiFetch(
-    `/companies/${companyId}/settings/operating_hours/${operatingHoursId}`,
-    {
-      method: "DELETE",
-    }
+    `/companies/${companyId}/settings/off_days/create`,
+    { method: "POST", body: JSON.stringify(data) },
+    token
   );
 }
 
-// Services
+export function deleteOffDay(
+  companyId: string,
+  offDayId: string,
+  token: string
+) {
+  return apiFetch(
+    `/companies/${companyId}/settings/off_days/delete/${offDayId}`,
+    { method: "DELETE" },
+    token
+  );
+}
+
+// ─── Services ─────────────────────────────────────────────────────────────────
 
 export interface ServicePayload {
   name: string;
-  description?: string;
-  durationInMinutes: number;
+  description: string;
+  durationMinutes: number;
   price: number;
   isActive: boolean;
 }
 
-export function createService(companyId: string, data: ServicePayload) {
-  return apiFetch(`/companies/${companyId}/services/create`, {
-    method: "POST",
-    body: JSON.stringify(data),
-  });
+
+export function createService(
+  companyId: string,
+   data: ServicePayload,
+  token: string
+) {
+  return apiFetch(
+    `/companies/${companyId}/services/create`,
+    { method: "POST", body: JSON.stringify(data) },
+    token
+  );
 }
 
 export function updateService(
   companyId: string,
   serviceId: string,
-  data: ServicePayload
+   data: ServicePayload,
+  token: string
 ) {
-  return apiFetch(`/companies/${companyId}/services/update/${serviceId}`, {
-    method: "PUT",
-    body: JSON.stringify(data),
-  });
+  return apiFetch(
+    `/companies/${companyId}/services/update/${serviceId}`,
+    { method: "PUT", body: JSON.stringify(data) },
+    token
+  );
 }
 
-export function deleteService(companyId: string, serviceId: string) {
-  return apiFetch(`/companies/${companyId}/services/delete/${serviceId}`, {
-    method: "DELETE",
-  });
+export function deleteService(
+  companyId: string,
+  serviceId: string,
+  token: string
+) {
+  return apiFetch(
+    `/companies/${companyId}/services/delete/${serviceId}`,
+    { method: "DELETE" },
+    token
+  );
 }
