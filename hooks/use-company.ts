@@ -1,22 +1,35 @@
 "use client"
 
-import { useState, useCallback, useEffect } from "react"
 import type { Company, CompanyFormData } from "@/types/Company"
 import { useApiClerkClient } from "@/lib/api-clerk"
+import { useAuth } from "@clerk/nextjs";
+import { useEffect, useState } from "react";
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8080";
+export function useCompany() {
+  const { userId, getToken } = useAuth(); // userId = clerkUserId automaticamente
+  const [company, setCompany] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-export async function getCompanyByClerkId(): Promise<Company> {
-  const response = await fetch(`${API_BASE_URL}/list/{companyId}`, {
-    method: "GET",
-    headers: {
-      "Content-Type": "application/json",
-    },
-  });
+  useEffect(() => {
+    if (!userId) return;
 
-  if (!response.ok) {
-    throw new Error(`Failed to get company details: ${response.status}`);
-  }
+    async function fetchCompany() {
+      const token = await getToken(); // token sempre fresco, clerk renova sozinho
 
-  return response.json() as Promise<Company>;
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/companies/clerk/${userId}`,
+        {
+          headers: { "Authorization": `Bearer ${token}` },
+        }
+      );
+
+      const data = await res.json();
+      setCompany(data);
+      setLoading(false);
+    }
+
+    fetchCompany();
+  }, [userId]);
+
+  return { company, loading };
 }
