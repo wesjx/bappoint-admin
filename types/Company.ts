@@ -16,6 +16,7 @@ export interface Company {
   address: string;
   slug: string;
   settings: CompanySettings;
+  stripeAccountId: string;
 }
 
 export type CompanyFormData = Omit<Company, "id">
