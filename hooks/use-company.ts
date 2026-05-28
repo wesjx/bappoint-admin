@@ -1,7 +1,5 @@
 "use client"
 
-import type { Company, CompanyFormData } from "@/types/Company"
-import { useApiClerkClient } from "@/lib/api-clerk"
 import { useAuth } from "@clerk/nextjs";
 import { useEffect, useState } from "react";
 
