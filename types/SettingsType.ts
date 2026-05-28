@@ -1,3 +1,4 @@
+// ─── Enums ────────────────────────────────────────────────────────────────────
 export type WeekDay =
   | "MONDAY"
   | "TUESDAY"
@@ -19,7 +20,44 @@ export type OffDayType =
   | "PERSONAL_LEAVE"
   | "OTHER";
 
-export interface CompanyType {
+// ─── Tipos da API (o que vem do backend) ──────────────────────────────────────
+
+export interface ApiOperatingHours {
+  id: string;
+  weekday: WeekDay;
+  isActive: boolean;
+  startTime: string;
+  endTime: string;
+  lunchStartTime?: string;
+  lunchEndTime?: string;
+}
+
+export interface ApiOffDay {
+  id: string;
+  date: string;
+  reason: string;
+  offDaysType: OffDayType;
+}
+
+export interface ApiService {
+  id: string;
+  name: string;
+  description?: string;
+  durationInMinutes?: number;
+  price?: number;
+  isActive: boolean;
+}
+
+export interface ApiSettings {
+  id: string;
+  appointmentInterval: AppointmentInterval;
+  maxCancellationInterval: number;
+  offDays: ApiOffDay[];
+  operatingHours: ApiOperatingHours[];
+  services: ApiService[];
+}
+
+export interface ApiCompany {
   id: string;
   name: string;
   email: string;
@@ -27,42 +65,70 @@ export interface CompanyType {
   address: string;
 }
 
-export interface OperatingHoursType {
-  id?: string;
+export interface OperatingHoursForm {
+  id: string;          
   weekday: WeekDay;
   isActive: boolean;
   startTime: string;
   endTime: string;
-  lunchStartTime?: string | null;
-  lunchEndTime?: string | null;
+  lunchStartTime: string; 
+  lunchEndTime: string;
 }
 
-export interface OffDayTypeModel {
-  id?: string;
+export interface ExistingOffDay {
+  id: string;          
   date: string;
   reason: string;
   offDaysType: OffDayType;
 }
 
-export interface ServiceType {
-  id?: string;
+export interface NewOffDay {
+  id?: never;           
+  date: string;
+  reason: string;
+  offDaysType: OffDayType;
+}
+
+export type OffDayForm = ExistingOffDay | NewOffDay;
+
+export interface ExistingService {
+  id: string;           
   name: string;
-  description?: string;
+  description: string;  
   durationInMinutes: number;
   price: number;
   isActive: boolean;
 }
 
-export interface SettingsDataType {
-  id?: string;
+export interface NewService {
+  id?: never;           
+  name: string;
+  description: string;
+  durationInMinutes: number;
+  price: number;
+  isActive: boolean;
+}
+
+export type ServiceForm = ExistingService | NewService;
+
+export interface SettingsForm {
+  id: string;
   appointmentInterval: AppointmentInterval;
   maxCancellationInterval: number;
-  offDays: OffDayTypeModel[];
-  operatingHours: OperatingHoursType[];
-  services: ServiceType[];
+  offDays: OffDayForm[];
+  operatingHours: OperatingHoursForm[];
+  services: ServiceForm[];
+}
+
+export interface CompanyForm {
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+  address: string;
 }
 
 export interface ConfigType {
-  company: CompanyType;
-  settings: SettingsDataType;
+  company: CompanyForm;
+  settings: SettingsForm;
 }
