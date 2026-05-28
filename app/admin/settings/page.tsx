@@ -147,121 +147,141 @@ export default function SettingsPage() {
 
     const saveConfig = async () => {
         if (!config || !company) return;
-
+      
         setIsSaving(true);
-
+      
         try {
-            const token = await getToken();
-            if (!token) throw new Error("No auth token available");
-            const companyId = config.company.id;
-          
-            await updateCompany(
+          const token = await getToken();
+          if (!token) throw new Error("No auth token available");
+      
+          const companyId = config.company.id;
+      
+          await updateCompany(
+            companyId,
+            {
+              name: config.company.name,
+              email: config.company.email,
+              phone: config.company.phone,
+              address: config.company.address,
+              clerkUserId: company.clerkUserId,
+              slug: company.slug,
+              stripeAccountId: company.stripeAccountId ?? "",
+              settings: {
+                appointmentInterval: config.settings.appointmentInterval,
+                maxCancellationInterval: config.settings.maxCancellationInterval,
+              },
+            },
+            token
+          );
+      
+          await Promise.all(
+            config.settings.operatingHours.map((hour) => {
+              const payload = {
+                weekday: hour.weekday,
+                isActive: hour.isActive,
+                startTime: hour.startTime,
+                endTime: hour.endTime,
+                lunchStartTime: hour.lunchStartTime ?? null,
+                lunchEndTime: hour.lunchEndTime ?? null,
+              };
+      
+              if (hour.id) {
+                return updateOperatingHours(companyId, hour.id, payload, token);
+              }
+      
+              return createOperatingHours(companyId, payload, token);
+            })
+          );
+      
+          const originalOffDays = company.settings?.offDays ?? [];
+          const currentOffDays = config.settings.offDays ?? [];
+      
+          const originalOffDayIds = new Set(
+            originalOffDays
+              .map((offDay: any) => offDay.id)
+              .filter(Boolean)
+          );
+      
+          const currentOffDayIds = new Set(
+            currentOffDays
+              .map((offDay) => offDay.id)
+              .filter(Boolean)
+          );
+      
+          const offDaysToCreate = currentOffDays.filter(
+            (offDay) => !offDay.id || !originalOffDayIds.has(offDay.id)
+          );
+      
+          const offDaysToDelete = originalOffDays.filter(
+            (offDay: any) => offDay.id && !currentOffDayIds.has(offDay.id)
+          );
+      
+          await Promise.all([
+            ...offDaysToCreate.map((offDay) =>
+              createOffDay(
                 companyId,
                 {
-                  name: config.company.name,
-                  email: config.company.email,
-                  phone: config.company.phone,
-                  address: config.company.address,
-                  clerkUserId: company.clerkUserId,
-                  slug: company.slug,
-                  stripeAccountId: company.stripeAccountId ?? "",
-                  settings: {
-                    appointmentInterval: config.settings.appointmentInterval,
-                    maxCancellationInterval: config.settings.maxCancellationInterval,
-                  },
+                  date: offDay.date,
+                  reason: offDay.reason,
+                  offDaysType: offDay.offDaysType,
                 },
                 token
-              );
-          
-            await Promise.all(
-              config.settings.operatingHours.map((hour) => {
-                if (hour.id) {
-                  return updateOperatingHours(companyId, hour.id, {
-                    weekday: hour.weekday,
-                    isActive: hour.isActive,
-                    startTime: hour.startTime,
-                    endTime: hour.endTime,
-                    lunchStartTime: hour.lunchStartTime ?? null,
-                    lunchEndTime: hour.lunchEndTime ?? null,
-                  }, token);
-                } else {
-                  return createOperatingHours(companyId, {
-                    weekday: hour.weekday,
-                    isActive: hour.isActive,
-                    startTime: hour.startTime,
-                    endTime: hour.endTime,
-                    lunchStartTime: hour.lunchStartTime ?? null,
-                    lunchEndTime: hour.lunchEndTime ?? null,
-                  }, token);
-                }
-              })
-            );
-          
-            const originalOffDayIds = new Set(
-              (company.settings?.offDays ?? []).map((d: any) => d.id)
-            );
-            const currentOffDayIds = new Set(
-              config.settings.offDays.map((d) => d.id)
-            );
-            const toCreate = config.settings.offDays.filter(
-              (d) => !originalOffDayIds.has(d.id)
-            );
-            const toDelete = (company.settings?.offDays ?? []).filter(
-              (d: any) => !currentOffDayIds.has(d.id)
-            );
-          
-            await Promise.all([
-              ...toCreate.map((d) =>
-                createOffDay(companyId, {
-                  date: d.date,
-                  reason: d.reason,
-                  offDaysType: d.offDaysType,
-                }, token)
-              ),
-              ...toDelete.map((d: any) => deleteOffDay(companyId, d.id, token)),
-            ]);
-          
-            const originalServiceIds = new Set(
-                (company.settings?.services ?? []).map((s: any) => s.id)
-              );
-              const currentServiceIds = new Set(
-                config.settings.services.filter((s) => s.id).map((s) => s.id)
-              );
-              
-              const servicesToDelete = (company.settings?.services ?? []).filter(
-                (s: any) => !currentServiceIds.has(s.id)
-              );
-              
-              await Promise.all([
-                ...config.settings.services.map((service) => {
-                  const payload = {
-                    name: service.name,
-                    description: service.description ?? "",
-                    durationMinutes: service.durationInMinutes,
-                    price: service.price,
-                    isActive: service.isActive,
-                  };
-              
-                  if (service.id) {
-                    return updateService(companyId, service.id, payload, token);
-                  }
-              
-                  return createService(companyId, payload, token);
-                }),
-                ...servicesToDelete.map((s: any) => deleteService(companyId, s.id, token)),
-              ]);
-              
-          
-            toast.success("Settings saved successfully!");
-          
-          } catch (error) {
-            toast.error("Failed to save settings. Please try again.");
-            console.error(error);
-          } finally {
-            setIsSaving(false);
-          }
-          
-    };
+              )
+            ),
+            ...offDaysToDelete.map((offDay: any) =>
+              deleteOffDay(companyId, offDay.id, token)
+            ),
+          ]);
+      
+          const originalServices = company.settings?.services ?? [];
+          const currentServices = config.settings.services ?? [];
+      
+          const originalServiceIds = new Set(
+            originalServices
+              .map((service: any) => service.id)
+              .filter(Boolean)
+          );
+      
+          const currentServiceIds = new Set(
+            currentServices
+              .map((service) => service.id)
+              .filter(Boolean)
+          );
+      
+          const servicesToDelete = originalServices.filter(
+            (service: any) => service.id && !currentServiceIds.has(service.id)
+          );
+      
+          await Promise.all([
+            ...currentServices.map((service) => {
+              const payload = {
+                name: service.name,
+                description: service.description ?? "",
+                durationMinutes: service.durationInMinutes,
+                price: service.price,
+                isActive: service.isActive,
+              };
+      
+              if (service.id && originalServiceIds.has(service.id)) {
+                return updateService(companyId, service.id, payload, token);
+              }
+      
+              return createService(companyId, payload, token);
+            }),
+            ...servicesToDelete.map((service: any) =>
+              deleteService(companyId, service.id, token)
+            ),
+          ]);
+      
+          toast.success("Settings saved successfully!");
+        } catch (error) {
+          console.error("Failed to save settings:", error);
+          toast.error("Failed to save settings. Please try again.");
+        } finally {
+          setIsSaving(false);
+        }
+      };
+      
 
 
     if (loading || !config) {
