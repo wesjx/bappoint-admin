@@ -69,6 +69,53 @@ export default function SettingsPage() {
         console.log("🔧 Configuration updated:", config);
     }, [config]);
 
+    const handleDeleteService = async (index: number, serviceId?: string) => {
+        if (!config) return;
+      
+        // serviço novo, ainda sem id no banco
+        if (!serviceId) {
+          setConfig((prev) =>
+            prev
+              ? {
+                  ...prev,
+                  settings: {
+                    ...prev.settings,
+                    services: prev.settings.services.filter((_, i) => i !== index),
+                  },
+                }
+              : prev
+          );
+          return;
+        }
+      
+        try {
+          const token = await getToken();
+          if (!token) throw new Error("No auth token available");
+      
+          await deleteService(config.company.id, serviceId, token);
+      
+          setConfig((prev) =>
+            prev
+              ? {
+                  ...prev,
+                  settings: {
+                    ...prev.settings,
+                    services: prev.settings.services.filter(
+                      (service) => service.id !== serviceId
+                    ),
+                  },
+                }
+              : prev
+          );
+      
+          toast.success("Service deleted successfully!");
+        } catch (error) {
+          console.error("Failed to delete service:", error);
+          toast.error("Failed to delete service.");
+        }
+      };
+      
+
     const updateCompanyField = (
         field: keyof ConfigType["company"],
         value: string
@@ -236,42 +283,30 @@ export default function SettingsPage() {
           const originalServices = company.settings?.services ?? [];
           const currentServices = config.settings.services ?? [];
       
-          const originalServiceIds = new Set(
-            originalServices
-              .map((service: any) => service.id)
-              .filter(Boolean)
-          );
+        //   const originalServiceIds = new Set(
+        //     originalServices
+        //       .map((service: any) => service.id)
+        //       .filter(Boolean)
+        //   );
       
-          const currentServiceIds = new Set(
-            currentServices
-              .map((service) => service.id)
-              .filter(Boolean)
-          );
-      
-          const servicesToDelete = originalServices.filter(
-            (service: any) => service.id && !currentServiceIds.has(service.id)
-          );
-      
-          await Promise.all([
-            ...currentServices.map((service) => {
+        await Promise.all(
+            currentServices.map((service) => {
               const payload = {
                 name: service.name,
                 description: service.description ?? "",
-                durationMinutes: service.durationInMinutes,
+                durationMinutes: service.durationMinutes,
                 price: service.price,
                 isActive: service.isActive,
               };
-      
-              if (service.id && originalServiceIds.has(service.id)) {
+          
+              if (service.id) {
                 return updateService(companyId, service.id, payload, token);
               }
-      
+          
               return createService(companyId, payload, token);
-            }),
-            ...servicesToDelete.map((service: any) =>
-              deleteService(companyId, service.id, token)
-            ),
-          ]);
+            })
+          );
+          
       
           toast.success("Settings saved successfully!");
         } catch (error) {
@@ -365,6 +400,7 @@ export default function SettingsPage() {
                             <SettingsServices
                                 services={config.settings.services}
                                 onChangeServices={(services) => updateSettingsField("services", services)}
+                                onDeleteService={handleDeleteService}
                             />
 
                         </TabsContent>
