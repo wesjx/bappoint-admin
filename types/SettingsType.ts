@@ -48,7 +48,7 @@ export interface ServiceType {
   id?: string;
   name: string;
   description?: string;
-  durationInMinutes: number;
+  durationMinutes: number;
   price: number;
   isActive: boolean;
 }
