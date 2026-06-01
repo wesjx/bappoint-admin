@@ -1,11 +1,18 @@
+"use client"
 import BookCalendar from "@/components/book-calendar"
 import TodayBooks from "@/components/today-books"
 import Header from "@/components/header"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import Statistics from "@/components/statistics"
 import BookingsPanel from "@/components/bookings"
+import { useCompany } from "@/contexts/company-context"
+
 
 export default function Bookings() {
+
+  const { company, loading } = useCompany();
+
+  console.log(company);
 
   return (
     <>
@@ -21,7 +28,7 @@ export default function Bookings() {
 
         </div>
 
-        <TabsContent value="list">
+        {/* <TabsContent value="list">
           <BookingsPanel />
         </TabsContent>
 
@@ -31,8 +38,12 @@ export default function Bookings() {
 
         <TabsContent value="today">
           <TodayBooks />
-        </TabsContent>
+        </TabsContent> */}
       </Tabs>
+      <div>
+      <h1>{company?.name}</h1>
+      <p>{company?.email}</p>
+    </div>
     </>
   )
 }
