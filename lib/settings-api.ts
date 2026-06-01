@@ -151,14 +151,26 @@ export function updateService(
   );
 }
 
-export function deleteService(
+export async function deleteService(
   companyId: string,
   serviceId: string,
   token: string
 ) {
-  return apiFetch(
-    `/companies/${companyId}/services/delete/${serviceId}`,
-    { method: "DELETE" },
-    token
+  const response = await fetch(
+    `${BASE_URL}/companies/${companyId}/services/delete/${serviceId}`,
+    {
+      method: "DELETE",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
   );
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(errorText || "Failed to delete service");
+  }
+
+  return true;
 }
+
