@@ -27,12 +27,13 @@ import { ServiceType } from "@/types/SettingsType";
 type SettingsServicesProps = {
   services: ServiceType[];
   onChangeServices: (services: ServiceType[]) => void;
+  onDeleteService: (index: number, serviceId?: string) => Promise<void>;
 };
 
 const EMPTY_SERVICE: Omit<ServiceType, "id"> = {
   name: "",
   description: "",
-  durationInMinutes: 30,
+  durationMinutes: 30,
   price: 0,
   isActive: true,
 };
@@ -40,6 +41,7 @@ const EMPTY_SERVICE: Omit<ServiceType, "id"> = {
 export default function SettingsServices({
   services,
   onChangeServices,
+  onDeleteService
 }: SettingsServicesProps) {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [newService, setNewService] = useState<Omit<ServiceType, "id">>({
@@ -56,10 +58,6 @@ export default function SettingsServices({
         service.id === id ? { ...service, [field]: value } : service
       )
     );
-  }
-
-  function removeService(id: string | undefined) {
-    onChangeServices(services.filter((service) => service.id !== id));
   }
 
   function addService() {
@@ -150,11 +148,11 @@ export default function SettingsServices({
                   <Input
                     type="number"
                     min={1}
-                    value={newService.durationInMinutes}
+                    value={newService.durationMinutes}
                     onChange={(e) =>
                       setNewService((prev) => ({
                         ...prev,
-                        durationInMinutes: Number(e.target.value),
+                        durationMinutes: Number(e.target.value),
                       }))
                     }
                   />
@@ -189,7 +187,7 @@ export default function SettingsServices({
             No services added yet.
           </div>
         ) : (
-          services.map((service) => (
+          services.map((service, index) => (
             <div
               key={service.id ?? service.name}
               className="rounded-lg border p-4 space-y-4"
@@ -211,7 +209,7 @@ export default function SettingsServices({
                   <Button
                     variant="ghost"
                     size="icon"
-                    onClick={() => removeService(service.id)}
+                    onClick={() => onDeleteService(index, service.id)}
                   >
                     <Trash2 className="h-4 w-4 text-destructive" />
                   </Button>
@@ -254,11 +252,11 @@ export default function SettingsServices({
                   <Label>Duration (min)</Label>
                   <Input
                     type="number"
-                    value={service.durationInMinutes}
+                    value={service.durationMinutes}
                     onChange={(e) =>
                       updateService(
                         service.id,
-                        "durationInMinutes",
+                        "durationMinutes",
                         Number(e.target.value)
                       )
                     }
