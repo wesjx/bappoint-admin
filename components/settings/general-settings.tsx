@@ -7,15 +7,16 @@ import { Textarea } from "../ui/textarea";
 type GeneralFunctionsProps = {
     company: ConfigType["company"];
     settings: ConfigType["settings"];
-    onUpdateCompanyField: (
-        field: keyof ConfigType["company"],
-        value: string
+    onUpdateCompanyField: <K extends keyof ConfigType["company"]>(
+      field: K,
+      value: ConfigType["company"][K]
     ) => void;
-    onUpdateSettingsField: (
-        field: keyof ConfigType["settings"],
-        value: ConfigType["settings"][keyof ConfigType["settings"]]
+    onUpdateSettingsField: <K extends keyof ConfigType["settings"]>(
+      field: K,
+      value: ConfigType["settings"][K]
     ) => void;
-};
+  };
+  
 
 export default function GeneralFunctions({
     company,
@@ -23,35 +24,6 @@ export default function GeneralFunctions({
     onUpdateCompanyField,
     onUpdateSettingsField,
 }: GeneralFunctionsProps) {
-
-    // const updateCompany = (field: keyof ConfigType["company"], value: string) => {
-    //     setConfig((prev) => {
-    //       if (!prev) return prev;
-    //       return {
-    //         ...prev,
-    //         company: {
-    //           ...prev.company,
-    //           [field]: value,
-    //         },
-    //       };
-    //     });
-    //   };
-
-    //   const updateSettings = (
-    //     field: keyof ConfigType["settings"],
-    //     value: ConfigType["settings"][keyof ConfigType["settings"]]
-    //   ) => {
-    //     setConfig((prev) => {
-    //       if (!prev) return prev;
-    //       return {
-    //         ...prev,
-    //         settings: {
-    //           ...prev.settings,
-    //           [field]: value,
-    //         },
-    //       };
-    //     });
-    //   };
 
     return (
         <>
@@ -100,9 +72,14 @@ export default function GeneralFunctions({
                             <Label>Deposit Percentage (%)</Label>
                             <Input
                                 type="number"
-                                // value={config.payment.depositPercentage}
-                                // onChange={(e) => updatePayment("depositPercentage", Number.parseInt(e.target.value))}
-                                // min="0"
+                                value={company.depositPercentage}
+                                onChange={(e) =>
+                                    onUpdateCompanyField(
+                                      "depositPercentage",
+                                      e.target.value === "" ? 0 : Number.parseInt(e.target.value, 10)
+                                    )
+                                  }
+                                  min="0"
                                 max="100"
                             />
                         </div>
