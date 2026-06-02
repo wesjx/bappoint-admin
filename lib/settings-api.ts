@@ -29,6 +29,7 @@ export interface UpdateCompanyPayload {
   clerkUserId: string;
   slug: string;
   stripeAccountId: string;
+  depositPercentage: number;
   settings: {
     appointmentInterval: string;
     maxCancellationInterval: number;
@@ -103,16 +104,27 @@ export function createOffDay(
   );
 }
 
-export function deleteOffDay(
+export async function deleteOffDay(
   companyId: string,
   offDayId: string,
   token: string
 ) {
-  return apiFetch(
-    `/companies/${companyId}/settings/off_days/delete/${offDayId}`,
-    { method: "DELETE" },
-    token
+  const response = await fetch(
+    `${BASE_URL}/companies/${companyId}/settings/off_days/delete/${offDayId}`,
+    {
+      method: "DELETE",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
   );
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(errorText || "Failed to delete off day");
+  }
+
+  return true;
 }
 
 // ─── Services ─────────────────────────────────────────────────────────────────
