@@ -32,7 +32,7 @@ import { ConfigType, OffDayType } from "@/types/SettingsType";
 
 type OffDaysProps = {
   addOffDay: () => void;
-  removeOffDay: (id: string) => void;
+  handleDeleteOffDay: (index: number, offDayId?: string) => Promise<void>;
   isOffDayDialogOpen: boolean;
   setIsOffDayDialogOpen: (open: boolean) => void;
   newOffDayDate: Date | undefined;
@@ -46,7 +46,7 @@ type OffDaysProps = {
 
 export function OffDays({
   addOffDay,
-  removeOffDay,
+  handleDeleteOffDay,
   isOffDayDialogOpen,
   setIsOffDayDialogOpen,
   newOffDayDate,
@@ -170,7 +170,7 @@ export function OffDays({
                   <Button
                     variant="ghost"
                     size="icon"
-                    onClick={() => removeOffDay(day.id!)}
+                    onClick={() => handleDeleteOffDay(config.settings.offDays.indexOf(day), day.id)}
                   >
                     <Trash2 className="h-4 w-4 text-destructive" />
                   </Button>
