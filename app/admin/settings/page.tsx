@@ -51,6 +51,7 @@ export default function SettingsPage() {
                 email: company.email ?? "",
                 phone: company.phone ?? "",
                 address: company.address ?? "",
+                depositPercentage: company.depositPercentage,
             },
             settings: {
                 id: company.settings?.id,
@@ -72,7 +73,6 @@ export default function SettingsPage() {
     const handleDeleteService = async (index: number, serviceId?: string) => {
         if (!config) return;
       
-        // serviço novo, ainda sem id no banco
         if (!serviceId) {
           setConfig((prev) =>
             prev
@@ -115,18 +115,62 @@ export default function SettingsPage() {
         }
       };
       
-
-    const updateCompanyField = (
-        field: keyof ConfigType["company"],
-        value: string
-    ) => {
-        setConfig((prev) =>
+      const handleDeleteOffDay = async (index: number, offDayId?: string) => {
+        if (!config) return;
+      
+        if (!offDayId) {
+          setConfig((prev) =>
             prev
-                ? {
-                    ...prev,
-                    company: {
-                        ...prev.company,
-                        [field]: value,
+              ? {
+                  ...prev,
+                  settings: {
+                    ...prev.settings,
+                    offDays: prev.settings.offDays.filter((_, i) => i !== index),
+                  },
+                }
+              : prev
+          );
+          return;
+        }
+      
+        try {
+          const token = await getToken();
+          if (!token) throw new Error("No auth token available");
+      
+          await deleteOffDay(config.company.id, offDayId, token);
+      
+          setConfig((prev) =>
+            prev
+              ? {
+                  ...prev,
+                  settings: {
+                    ...prev.settings,
+                    offDays: prev.settings.offDays.filter(
+                      (offDay) => offDay.id !== offDayId
+                    ),
+                  },
+                }
+              : prev
+          );
+      
+          toast.success("Off day deleted successfully!");
+        } catch (error) {
+          console.error("Failed to delete off day:", error);
+          toast.error("Failed to delete off day.");
+        }
+      };
+
+      const updateCompanyField = <K extends keyof ConfigType["company"]>(
+        field: K,
+        value: ConfigType["company"][K]
+      ) => {
+        setConfig((prev) =>
+          prev
+            ? {
+                ...prev,
+                company: {
+                  ...prev.company,
+                  [field]: value,
                     },
                 }
                 : prev
@@ -178,20 +222,6 @@ export default function SettingsPage() {
         setIsOffDayDialogOpen(false);
     };
 
-    const removeOffDay = (id: string) => {
-        setConfig((prev) =>
-            prev
-                ? {
-                    ...prev,
-                    settings: {
-                        ...prev.settings,
-                        offDays: prev.settings.offDays.filter((offDay) => offDay.id !== id),
-                    },
-                }
-                : prev
-        );
-    };
-
     const saveConfig = async () => {
         if (!config || !company) return;
       
@@ -213,6 +243,7 @@ export default function SettingsPage() {
               clerkUserId: company.clerkUserId,
               slug: company.slug,
               stripeAccountId: company.stripeAccountId ?? "",
+              depositPercentage: config.company.depositPercentage,
               settings: {
                 appointmentInterval: config.settings.appointmentInterval,
                 maxCancellationInterval: config.settings.maxCancellationInterval,
@@ -280,14 +311,7 @@ export default function SettingsPage() {
             ),
           ]);
       
-          const originalServices = company.settings?.services ?? [];
           const currentServices = config.settings.services ?? [];
-      
-        //   const originalServiceIds = new Set(
-        //     originalServices
-        //       .map((service: any) => service.id)
-        //       .filter(Boolean)
-        //   );
       
         await Promise.all(
             currentServices.map((service) => {
@@ -339,7 +363,7 @@ export default function SettingsPage() {
                     </div>
 
                     <Tabs defaultValue="operatingHours" className="space-y-6">
-                        <TabsList className="grid w-full grid-cols-5">
+                        <TabsList className="grid w-full grid-cols-4">
                             <TabsTrigger value="operatingHours">
                                 <Clock className="mr-2 h-4 w-4" />
                                 Operating Hours
@@ -353,11 +377,6 @@ export default function SettingsPage() {
                             <TabsTrigger value="services">
                                 <Car className="mr-2 h-4 w-4" />
                                 Services
-                            </TabsTrigger>
-
-                            <TabsTrigger value="notifications">
-                                <Bell className="mr-2 h-4 w-4" />
-                                Notifications
                             </TabsTrigger>
 
                             <TabsTrigger value="general">
@@ -382,7 +401,7 @@ export default function SettingsPage() {
                         <TabsContent value="offDays">
                             <OffDays
                                 addOffDay={addOffDay}
-                                removeOffDay={removeOffDay}
+                                handleDeleteOffDay={handleDeleteOffDay}
                                 isOffDayDialogOpen={isOffDayDialogOpen}
                                 setIsOffDayDialogOpen={setIsOffDayDialogOpen}
                                 newOffDayDate={newOffDayDate}
