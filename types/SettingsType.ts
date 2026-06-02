@@ -25,6 +25,7 @@ export interface CompanyType {
   email: string;
   phone: string;
   address: string;
+  depositPercentage: number;
 }
 
 export interface OperatingHoursType {
