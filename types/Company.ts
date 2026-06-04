@@ -17,6 +17,7 @@ export interface Company {
   slug: string;
   settings: CompanySettings;
   stripeAccountId: string;
+  depositPercentage: number;
 }
 
 export type CompanyFormData = Omit<Company, "id">
