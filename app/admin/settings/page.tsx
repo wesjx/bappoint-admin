@@ -27,6 +27,8 @@ import {
 } from "@/lib/settings-api";
 import { toast } from "sonner";
 import { useAuth } from "@clerk/nextjs";
+import { saveCompanySettings } from "@/lib/settings/company-save";
+import { saveOffDay } from "@/lib/settings/offdays-save";
 
 
 export default function SettingsPage() {
@@ -233,24 +235,7 @@ export default function SettingsPage() {
       
           const companyId = config.company.id;
       
-          await updateCompany(
-            companyId,
-            {
-              name: config.company.name,
-              email: config.company.email,
-              phone: config.company.phone,
-              address: config.company.address,
-              clerkUserId: company.clerkUserId,
-              slug: company.slug,
-              stripeAccountId: company.stripeAccountId ?? "",
-              depositPercentage: config.company.depositPercentage,
-              settings: {
-                appointmentInterval: config.settings.appointmentInterval,
-                maxCancellationInterval: config.settings.maxCancellationInterval,
-              },
-            },
-            token
-          );
+          await saveCompanySettings(companyId, config, company, token);
       
           await Promise.all(
             config.settings.operatingHours.map((hour) => {
@@ -271,45 +256,7 @@ export default function SettingsPage() {
             })
           );
       
-          const originalOffDays = company.settings?.offDays ?? [];
-          const currentOffDays = config.settings.offDays ?? [];
-      
-          const originalOffDayIds = new Set(
-            originalOffDays
-              .map((offDay: any) => offDay.id)
-              .filter(Boolean)
-          );
-      
-          const currentOffDayIds = new Set(
-            currentOffDays
-              .map((offDay) => offDay.id)
-              .filter(Boolean)
-          );
-      
-          const offDaysToCreate = currentOffDays.filter(
-            (offDay) => !offDay.id || !originalOffDayIds.has(offDay.id)
-          );
-      
-          const offDaysToDelete = originalOffDays.filter(
-            (offDay: any) => offDay.id && !currentOffDayIds.has(offDay.id)
-          );
-      
-          await Promise.all([
-            ...offDaysToCreate.map((offDay) =>
-              createOffDay(
-                companyId,
-                {
-                  date: offDay.date,
-                  reason: offDay.reason,
-                  offDaysType: offDay.offDaysType,
-                },
-                token
-              )
-            ),
-            ...offDaysToDelete.map((offDay: any) =>
-              deleteOffDay(companyId, offDay.id, token)
-            ),
-          ]);
+          await saveOffDay(companyId, config, company, token);
       
           const currentServices = config.settings.services ?? [];
       
