@@ -29,6 +29,7 @@ import { toast } from "sonner";
 import { useAuth } from "@clerk/nextjs";
 import { saveCompanySettings } from "@/lib/settings/company-save";
 import { saveOffDay } from "@/lib/settings/offdays-save";
+import { saveOperatingHours } from "@/lib/settings/operating-hours-save";
 
 
 export default function SettingsPage() {
@@ -237,24 +238,7 @@ export default function SettingsPage() {
       
           await saveCompanySettings(companyId, config, company, token);
       
-          await Promise.all(
-            config.settings.operatingHours.map((hour) => {
-              const payload = {
-                weekday: hour.weekday,
-                isActive: hour.isActive,
-                startTime: hour.startTime,
-                endTime: hour.endTime,
-                lunchStartTime: hour.lunchStartTime ?? null,
-                lunchEndTime: hour.lunchEndTime ?? null,
-              };
-      
-              if (hour.id) {
-                return updateOperatingHours(companyId, hour.id, payload, token);
-              }
-      
-              return createOperatingHours(companyId, payload, token);
-            })
-          );
+          await saveOperatingHours(companyId, config, company, token);
       
           await saveOffDay(companyId, config, company, token);
       
