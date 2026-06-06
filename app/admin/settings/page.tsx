@@ -30,6 +30,7 @@ import { useAuth } from "@clerk/nextjs";
 import { saveCompanySettings } from "@/lib/settings/company-save";
 import { saveOffDay } from "@/lib/settings/offdays-save";
 import { saveOperatingHours } from "@/lib/settings/operating-hours-save";
+import { saveService } from "@/lib/settings/services-save";
 
 
 export default function SettingsPage() {
@@ -242,26 +243,7 @@ export default function SettingsPage() {
       
           await saveOffDay(companyId, config, company, token);
       
-          const currentServices = config.settings.services ?? [];
-      
-        await Promise.all(
-            currentServices.map((service) => {
-              const payload = {
-                name: service.name,
-                description: service.description ?? "",
-                durationMinutes: service.durationMinutes,
-                price: service.price,
-                isActive: service.isActive,
-              };
-          
-              if (service.id) {
-                return updateService(companyId, service.id, payload, token);
-              }
-          
-              return createService(companyId, payload, token);
-            })
-          );
-          
+          await saveService(companyId, company, config, config.settings.services, token);
       
           toast.success("Settings saved successfully!");
         } catch (error) {
@@ -271,8 +253,6 @@ export default function SettingsPage() {
           setIsSaving(false);
         }
       };
-      
-
 
     if (loading || !config) {
         return <div className="p-6">Carregando configurações...</div>;
