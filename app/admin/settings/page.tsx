@@ -16,13 +16,7 @@ import {
     OperatingHoursType,
 } from "@/types/SettingsType";
 import {
-    updateCompany,
-    createOffDay,
     deleteOffDay,
-    createOperatingHours,
-    updateOperatingHours,
-    createService,
-    updateService,
     deleteService,
 } from "@/lib/settings-api";
 import { toast } from "sonner";
@@ -31,7 +25,6 @@ import { saveCompanySettings } from "@/lib/settings/company-save";
 import { saveOffDay } from "@/lib/settings/offdays-save";
 import { saveOperatingHours } from "@/lib/settings/operating-hours-save";
 import { saveService } from "@/lib/settings/services-save";
-
 
 export default function SettingsPage() {
     const { getToken } = useAuth();
@@ -68,11 +61,6 @@ export default function SettingsPage() {
             },
         });
     }, [company]);
-
-    useEffect(() => {
-        if (!config) return;
-        console.log("🔧 Configuration updated:", config);
-    }, [config]);
 
     const handleDeleteService = async (index: number, serviceId?: string) => {
         if (!config) return;
@@ -255,7 +243,7 @@ export default function SettingsPage() {
       };
 
     if (loading || !config) {
-        return <div className="p-6">Carregando configurações...</div>;
+        return <div className="p-6">Loading settings...</div>;
     }
 
     return (
