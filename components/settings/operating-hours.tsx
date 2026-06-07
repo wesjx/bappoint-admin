@@ -100,16 +100,16 @@ export default function OperatingHours({
     const updated = operatingHours.map((item) =>
       item.weekday === weekday
         ? {
-            ...item,
-            [field]:
-              typeof value === "string" &&
+          ...item,
+          [field]:
+            typeof value === "string" &&
               (field === "startTime" ||
                 field === "endTime" ||
                 field === "lunchStartTime" ||
                 field === "lunchEndTime")
-                ? normalizeTimeForBackend(value)
-                : value,
-          }
+              ? normalizeTimeForBackend(value)
+              : value,
+        }
         : item
     );
 
@@ -163,6 +163,31 @@ export default function OperatingHours({
                       className="w-32"
                     />
                   </div>
+
+                  <div className="flex items-center space-x-2">
+                    <Label className="text-sm">Lunch start:</Label>
+                    <Input
+                      type="time"
+                      value={formatTimeForInput(schedule.lunchStartTime)}
+                      onChange={(e) =>
+                        updateOperatingHours(day.key, "lunchStartTime", e.target.value)
+                      }
+                      className="w-32"
+                    />
+                  </div>
+
+                  <div className="flex items-center space-x-2">
+                    <Label className="text-sm">Lunch end:</Label>
+                    <Input
+                      type="time"
+                      value={formatTimeForInput(schedule.lunchEndTime)}
+                      onChange={(e) =>
+                        updateOperatingHours(day.key, "lunchEndTime", e.target.value)
+                      }
+                      className="w-32"
+                    />
+                  </div>
+
                 </>
               ) : (
                 <Badge variant="secondary" className="bg-red-100 text-red-800">
