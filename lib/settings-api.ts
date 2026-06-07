@@ -104,27 +104,16 @@ export function createOffDay(
   );
 }
 
-export async function deleteOffDay(
+export function deleteOffDay(
   companyId: string,
   offDayId: string,
   token: string
 ) {
-  const response = await fetch(
-    `${BASE_URL}/companies/${companyId}/settings/off_days/delete/${offDayId}`,
-    {
-      method: "DELETE",
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    }
+  return apiFetch(
+    `/companies/${companyId}/settings/off_days/delete/${offDayId}`,
+    { method: "DELETE" },
+    token
   );
-
-  if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(errorText || "Failed to delete off day");
-  }
-
-  return true;
 }
 
 // ─── Services ─────────────────────────────────────────────────────────────────
@@ -163,26 +152,15 @@ export function updateService(
   );
 }
 
-export async function deleteService(
+export function deleteService(
   companyId: string,
   serviceId: string,
   token: string
 ) {
-  const response = await fetch(
-    `${BASE_URL}/companies/${companyId}/services/delete/${serviceId}`,
-    {
-      method: "DELETE",
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    }
+  return apiFetch(
+    `/companies/${companyId}/services/delete/${serviceId}`,
+    { method: "DELETE" },
+    token
   );
-
-  if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(errorText || "Failed to delete service");
-  }
-
-  return true;
 }
 
