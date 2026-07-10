@@ -1,34 +1,39 @@
-"use client"
+"use client";
 
-import BookingRow from "./bookin-row";
+import { Appointment } from "@/types/AppointmentCostumers";
+import BookingRow from "./booking-row";
 
 type Props = {
-    schedules: any[];
-    onSeeDetails: (s: any) => void;
+  appointments: Appointment[];
+  onSeeDetails: (appointment: Appointment) => void;
 };
 
+export function BookingsTable({ appointments, onSeeDetails }: Props) {
+  return (
+    <div className="overflow-x-auto rounded-md border bg-white shadow-sm">
+      <table className="w-full min-w-[900px]">
+        <thead className="bg-slate-100 text-left">
+          <tr>
+            <th className="p-3 text-sm font-semibold">Customer</th>
+            <th className="p-3 text-sm font-semibold">Appointment date</th>
+            <th className="p-3 text-sm font-semibold">Time</th>
+            <th className="p-3 text-sm font-semibold">Services</th>
+            <th className="p-3 text-sm font-semibold">Amount</th>
+            <th className="p-3 text-sm font-semibold">Status</th>
+            <th className="p-3 text-sm font-semibold">Actions</th>
+          </tr>
+        </thead>
 
-export function BookingsTable({ schedules, onSeeDetails }: Props) {
-    return (
-        <div className="overflow-x-auto bg-white rounded-md shadow-sm">
-            <table className="w-full min-w-[800px]">
-                <thead className="bg-slate-100 text-left">
-                    <tr>
-                        <th className="p-3">Customer</th>
-                        <th className="p-3">Date/Time</th>
-                        <th className="p-3">Services</th>
-                        <th className="p-3">Vehicle</th>
-                        <th className="p-3">Amount</th>
-                        <th className="p-3">Status</th>
-                        <th className="p-3">Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {schedules.map((s) => (
-                        <BookingRow key={s.id} schedule={s} onSeeDetails={onSeeDetails} />
-                    ))}
-                </tbody>
-            </table>
-        </div>
-    );
+        <tbody>
+          {appointments.map((appointment) => (
+            <BookingRow
+              key={appointment.id}
+              appointment={appointment}
+              onSeeDetails={onSeeDetails}
+            />
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
 }
