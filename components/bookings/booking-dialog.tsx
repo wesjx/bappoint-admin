@@ -1,116 +1,174 @@
-"use client"
+"use client";
 
+import Link from "next/link";
 
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Appointment } from "@/types/AppointmentCostumers";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import Link from "next/link";
-import { getStatusColor } from "@/app/utils/status";
-
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { getStatusColor, getStatusLabel } from "@/app/utils/status";
 
 type Props = {
-    schedule?: any;
-    onClose: () => void;
+  appointment?: Appointment | null;
+  onClose: () => void;
 };
 
+function formatDate(date: string) {
+  return new Date(date).toLocaleDateString("en-IE", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  });
+}
 
-export function BookingDialog({ schedule, onClose }: Props) {
-    return (
-        <Dialog open={!!schedule} onOpenChange={onClose}>
-            <DialogContent className="max-w-2xl">
-                <DialogHeader>
-                    <DialogTitle>Detalhes do Agendamento</DialogTitle>
-                    <DialogDescription>Informações completas do schedule</DialogDescription>
-                </DialogHeader>
+function formatTime(dateTime: string) {
+  return new Date(dateTime).toLocaleTimeString("en-IE", {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
 
+function formatCurrency(value: number) {
+  return new Intl.NumberFormat("en-IE", {
+    style: "currency",
+    currency: "EUR",
+  }).format(value);
+}
 
-                {schedule ? (
-                    <div className="space-y-6">
-                        <div className="grid grid-cols-2 gap-6">
-                            <Card>
-                                <CardHeader>
-                                    <CardTitle className="text-lg">Customer Information</CardTitle>
-                                </CardHeader>
-                                <CardContent className="space-y-3">
-                                    <div className="flex items-center space-x-3">
-                                        <div className="font-medium">{schedule.client.name}</div>
-                                    </div>
-                                    <div className="space-y-2">
-                                        <div className="flex items-center space-x-2 text-sm">{schedule.client.phone}</div>
-                                        <div className="flex items-center space-x-2 text-sm">{schedule.client.email}</div>
-                                    </div>
-                                </CardContent>
-                            </Card>
+export function BookingDialog({ appointment, onClose }: Props) {
+  return (
+    <Dialog open={!!appointment} onOpenChange={onClose}>
+      <DialogContent className="max-w-2xl">
+        <DialogHeader>
+          <DialogTitle>Appointment details</DialogTitle>
+          <DialogDescription>
+            Complete appointment information from the backend.
+          </DialogDescription>
+        </DialogHeader>
 
+        {appointment ? (
+          <div className="space-y-6">
+            <div className="grid gap-6 md:grid-cols-2">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg">Customer information</CardTitle>
+                </CardHeader>
 
-                            <Card>
-                                <CardHeader>
-                                    <CardTitle className="text-lg">Appointment Details</CardTitle>
-                                </CardHeader>
-                                <CardContent className="space-y-3">
-                                    <div>
-                                        <div className="text-sm text-muted-foreground">Date and Time</div>
-                                        <div className="font-medium">{new Date(schedule.date).toLocaleDateString("en-GB")} at {schedule.time}</div>
-                                    </div>
-                                    <div>
-                                        <div className="text-sm text-muted-foreground">Status</div>
-                                        <Badge className={getStatusColor(schedule.status)}>{schedule.status}</Badge>
-                                    </div>
-                                </CardContent>
-                            </Card>
-                        </div>
-                        <Card>
-                            <CardHeader>
-                                <CardTitle className="text-lg">Services and Payment</CardTitle>
-                            </CardHeader>
-                            <CardContent>
-                                <div className="space-y-4">
-                                    <div>
-                                        <div className="text-sm text-muted-foreground mb-2">Selected Services</div>
-                                        <div className="space-y-1">
-                                            {schedule.services.map((s: string, i: number) => (
-                                                <Badge key={i} variant="outline">{s}</Badge>
-                                            ))}
-                                        </div>
-                                    </div>
+                <CardContent className="space-y-3">
+                  <div>
+                    <div className="text-sm text-muted-foreground">Name</div>
+                    <div className="font-medium">{appointment.costumerName}</div>
+                  </div>
 
+                  <div>
+                    <div className="text-sm text-muted-foreground">Email</div>
+                    <div className="break-all text-sm">{appointment.costumerEmail}</div>
+                  </div>
 
-                                    <div className="grid grid-cols-3 gap-4 pt-4 border-t">
-                                        <div>
-                                            <div className="text-sm text-muted-foreground">Total</div>
-                                            <div className="text-lg font-bold">€{schedule.total}</div>
-                                        </div>
-                                        <div>
-                                            <div className="text-sm text-muted-foreground">Deposit Paid</div>
-                                            <div className="text-lg font-bold text-green-600">€{schedule.depositPaid}</div>
-                                        </div>
-                                        <div>
-                                            <div className="text-sm text-muted-foreground">Remaining</div>
-                                            <div className="text-lg font-bold text-orange-600">€{schedule.total - schedule.depositPaid}</div>
-                                        </div>
-                                    </div>
+                  <div>
+                    <div className="text-sm text-muted-foreground">Phone</div>
+                    <div className="text-sm">{appointment.costumerPhone}</div>
+                  </div>
+                </CardContent>
+              </Card>
 
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg">Appointment details</CardTitle>
+                </CardHeader>
 
-                                    {schedule.notes && (
-                                        <div>
-                                            <div className="text-sm text-muted-foreground">Notes</div>
-                                            <div className="text-sm bg-slate-50 p-2 rounded">{schedule.notes}</div>
-                                        </div>
-                                    )}
-                                </div>
-                            </CardContent>
-                        </Card>
-
-
-                        <div className="flex justify-end space-x-2">
-                            <Button variant="outline" onClick={onClose}>Close</Button>
-                            <Button variant="outline"><Link href={`/admin/reschedule/${schedule.id}`}>Reschedule</Link></Button>
-                            <Button>Confirm Appointment</Button>
-                        </div>
+                <CardContent className="space-y-3">
+                  <div>
+                    <div className="text-sm text-muted-foreground">Date</div>
+                    <div className="font-medium">
+                      {formatDate(appointment.appointmentDate)}
                     </div>
-                ) : null}
-            </DialogContent>
-        </Dialog>
-    );
+                  </div>
+
+                  <div>
+                    <div className="text-sm text-muted-foreground">Start time</div>
+                    <div className="font-medium">
+                      {formatTime(appointment.startTime)}
+                    </div>
+                  </div>
+
+                  <div>
+                    <div className="text-sm text-muted-foreground">End time</div>
+                    <div className="font-medium">
+                      {formatTime(appointment.endTime)}
+                    </div>
+                  </div>
+
+                  <div>
+                    <div className="text-sm text-muted-foreground">Status</div>
+                    <Badge className={getStatusColor(appointment.appointmentStatus)}>
+                      {getStatusLabel(appointment.appointmentStatus)}
+                    </Badge>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">Services and payment</CardTitle>
+              </CardHeader>
+
+              <CardContent className="space-y-4">
+                <div>
+                  <div className="mb-2 text-sm text-muted-foreground">Service IDs</div>
+                  <div className="flex flex-wrap gap-2">
+                    {appointment.serviceIds.length > 0 ? (
+                      appointment.serviceIds.map((serviceId) => (
+                        <Badge key={serviceId} variant="outline">
+                          {serviceId}
+                        </Badge>
+                      ))
+                    ) : (
+                      <span className="text-sm text-muted-foreground">
+                        No services linked to this appointment.
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                <div className="grid gap-4 border-t pt-4 md:grid-cols-2">
+                  <div>
+                    <div className="text-sm text-muted-foreground">Total amount</div>
+                    <div className="text-lg font-bold">
+                      {formatCurrency(appointment.totalAmount)}
+                    </div>
+                  </div>
+
+                  <div>
+                    <div className="text-sm text-muted-foreground">Stripe session</div>
+                    <div className="break-all text-sm">
+                      {appointment.stripeSessionId || "Not available"}
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" onClick={onClose}>
+                Close
+              </Button>
+
+              <Button variant="outline" asChild>
+                <Link href={`/admin/reschedule/${appointment.id}`}>Reschedule</Link>
+              </Button>
+            </div>
+          </div>
+        ) : null}
+      </DialogContent>
+    </Dialog>
+  );
 }
