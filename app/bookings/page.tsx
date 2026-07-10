@@ -1,6 +1,6 @@
 "use client";
 
-import BookCalendar from "@/components/book-calendar";
+import BookCalendar from "@/components/appointments-calendar";
 import TodayBooks from "@/components/today-books";
 import Header from "@/components/header";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
