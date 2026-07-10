@@ -16,7 +16,6 @@ type GeneralFunctionsProps = {
       value: ConfigType["settings"][K]
     ) => void;
   };
-  
 
 export default function GeneralFunctions({
     company,
