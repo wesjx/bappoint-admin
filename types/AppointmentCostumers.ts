@@ -1,3 +1,5 @@
+import { Status } from "@/enum/status"
+
 export interface Appointment {
     id: string
     createdAt: string
