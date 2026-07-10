@@ -1,10 +1,13 @@
+import { ServiceType } from "./SettingsType";
+
+
 export interface CompanySettings {
   id: string;
   appointmentInterval: string;
   maxCancellationInterval: number;
   offDays: any[];
   operatingHours: any[];
-  services: any[]; 
+  services: ServiceType[]; 
 }
 
 export interface Company {
