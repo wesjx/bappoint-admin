@@ -1,15 +1,19 @@
 "use client";
 
 import { useAuth } from "@clerk/nextjs";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useCompany } from "@/contexts/company-context";
 import { Appointment } from "@/types/AppointmentCostumers";
 import { getAppointmentsList } from "@/lib/appointments";
+import { Status } from "@/enum/status";
 
+type BookingFilterStatus = "ALL" | Status;
 
 type UseAppointmentsListParams = {
   page: number;
   itemsPerPage: number;
+  search: string;
+  status: BookingFilterStatus;
 };
 
 type UseAppointmentsListReturn = {
@@ -19,11 +23,15 @@ type UseAppointmentsListReturn = {
   refetch: () => Promise<void>;
   hasNextPage: boolean;
   isEmpty: boolean;
+  totalPages: number;
+  totalElements: number;
 };
 
 export function useAppointmentsList({
   page,
   itemsPerPage,
+  search,
+  status,
 }: UseAppointmentsListParams): UseAppointmentsListReturn {
   const { getToken } = useAuth();
   const { company, loading: companyLoading } = useCompany();
@@ -31,10 +39,16 @@ export function useAppointmentsList({
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [hasNextPage, setHasNextPage] = useState(false);
+  const [totalPages, setTotalPages] = useState(0);
+  const [totalElements, setTotalElements] = useState(0);
 
   const fetchAppointments = useCallback(async () => {
     if (!company?.id) {
       setAppointments([]);
+      setHasNextPage(false);
+      setTotalPages(0);
+      setTotalElements(0);
       setLoading(false);
       return;
     }
@@ -61,29 +75,32 @@ export function useAppointmentsList({
         token,
         page,
         itemsPerPage,
+        search,
+        status,
       });
 
-      setAppointments(data);
+      setAppointments(data.content ?? []);
+      setHasNextPage(!data.last);
+      setTotalPages(data.totalPages ?? 0);
+      setTotalElements(data.totalElements ?? 0);
     } catch (err) {
       const message =
         err instanceof Error ? err.message : "Unknown error while fetching appointments";
 
       setError(message);
       setAppointments([]);
+      setHasNextPage(false);
+      setTotalPages(0);
+      setTotalElements(0);
     } finally {
       setLoading(false);
     }
-  }, [company?.id, getToken, page, itemsPerPage]);
+  }, [company?.id, getToken, page, itemsPerPage, search, status]);
 
   useEffect(() => {
     if (companyLoading) return;
     void fetchAppointments();
   }, [companyLoading, fetchAppointments]);
-
-  const hasNextPage = useMemo(
-    () => appointments.length === itemsPerPage,
-    [appointments.length, itemsPerPage]
-  );
 
   return {
     appointments,
@@ -92,5 +109,7 @@ export function useAppointmentsList({
     refetch: fetchAppointments,
     hasNextPage,
     isEmpty: !loading && appointments.length === 0,
+    totalPages,
+    totalElements,
   };
 }
