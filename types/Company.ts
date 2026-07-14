@@ -1,6 +1,5 @@
 import { ServiceType } from "./SettingsType";
 
-
 export interface CompanySettings {
   id: string;
   appointmentInterval: string;
