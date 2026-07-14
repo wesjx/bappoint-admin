@@ -1,7 +1,7 @@
 "use client";
 
-import BookCalendar from "@/components/appointments-calendar";
-import TodayBooks from "@/components/today-books";
+import AppointmentsCalendar from "@/components/appointments-calendar";
+import TodayAppointments from "@/components/today-appointments";
 import Header from "@/components/header";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Statistics from "@/components/statistics";
@@ -27,11 +27,11 @@ export default function Bookings() {
         </TabsContent>
 
         <TabsContent value="calendar">
-          <BookCalendar />
+          <AppointmentsCalendar />
         </TabsContent>
 
         <TabsContent value="today">
-          <TodayBooks />
+          <TodayAppointments />
         </TabsContent>
       </Tabs>
     </>
