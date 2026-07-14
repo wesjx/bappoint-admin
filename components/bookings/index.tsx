@@ -1,21 +1,35 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { BookingsFilters } from "./booking-filters";
 import { BookingsTable } from "./booking-table";
 import { BookingDialog } from "./booking-dialog";
 import { useAppointmentsList } from "@/hooks/use-appointments-list";
 import { Appointment } from "@/types/AppointmentCostumers";
+import { Status } from "@/enum/status";
+import { useDebounce } from "@/hooks/use-debounce";
+
+type BookingFilterStatus = "ALL" | Status;
 
 export default function BookingsPanel() {
   const [page, setPage] = useState(0);
   const [itemsPerPage] = useState(10);
   const [selected, setSelected] = useState<Appointment | null>(null);
+  const [search, setSearch] = useState("");
+  const [status, setStatus] = useState<BookingFilterStatus>("ALL");
+  const debouncedSearch = useDebounce(search, 500);
 
-  const { appointments, loading, error, hasNextPage } = useAppointmentsList({
-    page,
-    itemsPerPage,
-  });
+  useEffect(() => {
+    setPage(0);
+  }, [search, status]);
+
+  const { appointments, loading, error, hasNextPage, totalPages, totalElements } =
+    useAppointmentsList({
+      page,
+      itemsPerPage,
+      search: debouncedSearch,
+      status,
+    });
 
   const handleSeeDetails = useCallback((appointment: Appointment) => {
     setSelected(appointment);
@@ -29,11 +43,17 @@ export default function BookingsPanel() {
     <div className="px-6 pb-6">
       <div className="space-y-6">
         <BookingsFilters
-          search=""
-          onSearch={() => {}}
-          status="all"
-          onStatusChange={() => {}}
+          search={search}
+          onSearch={setSearch}
+          status={status}
+          onStatusChange={setStatus}
         />
+
+        {!loading && !error && (
+          <div className="text-sm text-muted-foreground">
+            {totalElements} booking(s) found
+          </div>
+        )}
 
         {loading && (
           <div className="rounded-lg border bg-white p-6">
@@ -47,7 +67,7 @@ export default function BookingsPanel() {
           </div>
         )}
 
-        {!loading && !error && (
+        {!loading && !error && appointments.length > 0 && (
           <BookingsTable
             appointments={appointments}
             onSeeDetails={handleSeeDetails}
@@ -57,7 +77,7 @@ export default function BookingsPanel() {
         {!loading && !error && appointments.length === 0 && (
           <div className="rounded-lg border bg-white p-6">
             <p className="text-sm text-muted-foreground">
-              No bookings found for this page.
+              No bookings found with the selected filters.
             </p>
           </div>
         )}
@@ -73,7 +93,7 @@ export default function BookingsPanel() {
           </button>
 
           <span className="text-sm text-muted-foreground">
-            Page {page + 1}
+            Page {page + 1} of {Math.max(totalPages, 1)}
           </span>
 
           <button
@@ -87,7 +107,10 @@ export default function BookingsPanel() {
         </div>
       </div>
 
-      <BookingDialog appointment={selected ?? undefined} onClose={handleCloseDialog} />
+      <BookingDialog
+        appointment={selected ?? undefined}
+        onClose={handleCloseDialog}
+      />
     </div>
   );
 }
