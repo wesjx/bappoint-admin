@@ -14,6 +14,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { getStatusColor, getStatusLabel } from "@/app/utils/status";
+import { useServiceNameMap } from "@/hooks/use-service-name";
 
 type Props = {
   appointment?: Appointment | null;
@@ -43,6 +44,7 @@ function formatCurrency(value: number) {
 }
 
 export function BookingDialog({ appointment, onClose }: Props) {
+  const serviceNameMap = useServiceNameMap();
   return (
     <Dialog open={!!appointment} onOpenChange={onClose}>
       <DialogContent className="max-w-2xl">
@@ -128,7 +130,7 @@ export function BookingDialog({ appointment, onClose }: Props) {
                     {appointment.serviceIds.length > 0 ? (
                       appointment.serviceIds.map((serviceId) => (
                         <Badge key={serviceId} variant="outline">
-                          {serviceId}
+                          {serviceNameMap[serviceId]}
                         </Badge>
                       ))
                     ) : (
@@ -147,12 +149,6 @@ export function BookingDialog({ appointment, onClose }: Props) {
                     </div>
                   </div>
 
-                  <div>
-                    <div className="text-sm text-muted-foreground">Stripe session</div>
-                    <div className="break-all text-sm">
-                      {appointment.stripeSessionId || "Not available"}
-                    </div>
-                  </div>
                 </div>
               </CardContent>
             </Card>
