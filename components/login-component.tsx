@@ -15,7 +15,7 @@ export default function LoginComponent() {
             <Show when="signed-in">
                 <div className="flex flex-row gap-2.5">
                     <Button asChild className="font-sans">
-                        <Link href="/bookings">
+                        <Link href="/admin/bookings">
                             Bookings
                         </Link>
                     </Button>
