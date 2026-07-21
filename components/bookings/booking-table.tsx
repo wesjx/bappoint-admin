@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { Appointment } from "@/types/AppointmentCostumers";
 import BookingRow from "./booking-row";
 
@@ -9,6 +10,25 @@ type Props = {
 };
 
 export function BookingsTable({ appointments, onSeeDetails }: Props) {
+  const [localAppointments, setLocalAppointments] = useState(appointments);
+
+  useEffect(() => {
+    setLocalAppointments(appointments);
+  }, [appointments]);
+
+  function handleStatusUpdated(
+    appointmentId: string,
+    status: Appointment["appointmentStatus"]
+  ) {
+    setLocalAppointments((current) =>
+      current.map((appointment) =>
+        appointment.id === appointmentId
+          ? { ...appointment, appointmentStatus: status }
+          : appointment
+      )
+    );
+  }
+
   return (
     <div className="overflow-x-auto rounded-md border bg-white shadow-sm">
       <table className="w-full min-w-[900px]">
@@ -25,11 +45,12 @@ export function BookingsTable({ appointments, onSeeDetails }: Props) {
         </thead>
 
         <tbody>
-          {appointments.map((appointment) => (
+          {localAppointments.map((appointment) => (
             <BookingRow
               key={appointment.id}
               appointment={appointment}
               onSeeDetails={onSeeDetails}
+              onStatusUpdated={handleStatusUpdated}
             />
           ))}
         </tbody>

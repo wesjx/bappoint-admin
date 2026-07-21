@@ -15,6 +15,10 @@ const statusMap: Record<Status, { label: string; color: string }> = {
   },
   CONFIRMED: {
     label: "Confirmed",
+    color: "bg-green-100 text-green-600",
+  },
+  COMPLETED: {
+    label: "Completed",
     color: "bg-green-100 text-green-700",
   },
   PAID: {

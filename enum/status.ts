@@ -3,6 +3,7 @@ export type Status =
   | "REJECTED"
   | "CANCELLED"
   | "CONFIRMED"
+  | "COMPLETED"
   | "PAID"
   | "PENDING"
   | "NOT_PAID";
