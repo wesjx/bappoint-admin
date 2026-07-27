@@ -4,10 +4,18 @@ import { useMemo, useState } from "react";
 import { Appointment } from "@/types/AppointmentCostumers";
 import { useAppointmentsByDate } from "@/hooks/use-appointments-by-date";
 import { Calendar } from "./ui/calendar";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "./ui/card";
 import { Badge } from "./ui/badge";
 import { getStatusColor, getStatusLabel } from "@/app/utils/status";
 import { useServiceNameMap } from "@/hooks/use-service-name";
+import CreateManualAppointmentDialog from "./create-manual-appointment";
+import {startOfDay} from "date-fns"
 
 function formatDateToApi(date: Date): string {
   const year = date.getFullYear();
@@ -28,11 +36,14 @@ export default function BookCalendar() {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const serviceNameMap = useServiceNameMap();
 
+  const isPastDate = startOfDay(selectedDate) < startOfDay(new Date());
+
   const date = useMemo(() => formatDateToApi(selectedDate), [selectedDate]);
 
-  const { appointments, loading, error, isEmpty } = useAppointmentsByDate({
-    date,
-  });
+  const { appointments, loading, error, isEmpty, refetch } =
+    useAppointmentsByDate({
+      date,
+    });
 
   const handleSelectDate = (value?: Date) => {
     if (!value) return;
@@ -56,9 +67,19 @@ export default function BookCalendar() {
           />
 
           <div className="space-y-4">
-            <h3 className="font-semibold">
-              Appointments for {selectedDate.toLocaleDateString("en-IE")}
-            </h3>
+            <div className="flex items-center justify-between gap-4">
+              <h3 className="font-semibold">
+                Appointments for {selectedDate.toLocaleDateString("en-IE")}
+              </h3>
+
+              <CreateManualAppointmentDialog
+                selectedDate={selectedDate}
+                onCreated={async () => {
+                  await refetch();
+                }}
+                disabled={isPastDate}
+              />
+            </div>
 
             {loading && (
               <div className="rounded-md border bg-white p-4">
@@ -88,16 +109,23 @@ export default function BookCalendar() {
                   <Card key={appointment.id} className="p-4">
                     <div className="flex items-start justify-between gap-4">
                       <div className="space-y-1">
-                        <div className="font-medium">{appointment.costumerName}</div>
+                        <div className="font-medium">
+                          {appointment.costumerName}
+                        </div>
 
                         <div className="text-sm text-muted-foreground">
-                          {formatTime(appointment.startTime)} - {formatTime(appointment.endTime)}
+                          {formatTime(appointment.startTime)} -{" "}
+                          {formatTime(appointment.endTime)}
                         </div>
 
                         <div className="flex flex-wrap gap-2 pt-1">
                           {appointment.serviceIds.length > 0 ? (
                             appointment.serviceIds.map((serviceId) => (
-                              <Badge key={serviceId} variant="outline" className="text-xs">
+                              <Badge
+                                key={serviceId}
+                                variant="outline"
+                                className="text-xs"
+                              >
                                 {serviceNameMap[serviceId] ?? serviceId}
                               </Badge>
                             ))
@@ -109,7 +137,11 @@ export default function BookCalendar() {
                         </div>
                       </div>
 
-                      <Badge className={getStatusColor(appointment.appointmentStatus)}>
+                      <Badge
+                        className={getStatusColor(
+                          appointment.appointmentStatus
+                        )}
+                      >
                         {getStatusLabel(appointment.appointmentStatus)}
                       </Badge>
                     </div>
