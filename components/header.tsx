@@ -28,7 +28,7 @@ export default function () {
             }} />
           </Show>
         </div>
-        {usePathName === "/bookings" && (
+        {usePathName === "/admin/bookings" && (
           <Button size="icon">
             <Link href='/admin/settings'>
               <Settings />
