@@ -1,20 +1,37 @@
-import { Loader2 } from "lucide-react";
+"use client"
+
+import { HomeIcon, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Show, UserButton } from "@clerk/nextjs";
+import { usePathname } from "next/navigation";
+import Link from "next/link";
 
 type SettingsHeaderProps = {
   onSave: () => void;
   isSaving: boolean;
 };
 
+
 export default function SettingsHeader({ onSave, isSaving }: SettingsHeaderProps) {
+
+  const usePathName = usePathname();
+
   return (
     <div className="flex items-center justify-between px-6 py-4 border-b">
-      <div>
-        <h1 className="text-xl font-semibold">System Settings</h1>
-        <p className="text-muted-foreground text-sm">
-          Manage schedules, services, and general business settings
-        </p>
+      <div className="flex gap-3 items-center">
+        {usePathName === "/admin/settings" && (
+          <Button size="icon">
+            <Link href='/admin/bookings'>
+              <HomeIcon />
+            </Link>
+          </Button>
+        )}
+        <div>
+          <h1 className="text-xl font-semibold">System Settings</h1>
+          <p className="text-muted-foreground text-sm">
+            Manage schedules, services, and general business settings
+          </p>
+        </div>
       </div>
 
       <div className="flex items-center gap-3">
