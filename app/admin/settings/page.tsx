@@ -25,6 +25,7 @@ import { saveCompanySettings } from "@/lib/settings/company-save";
 import { saveOffDay } from "@/lib/settings/offdays-save";
 import { saveOperatingHours } from "@/lib/settings/operating-hours-save";
 import { saveService } from "@/lib/settings/services-save";
+import { useRouter } from "next/navigation";
 
 export default function SettingsPage() {
     const { getToken } = useAuth();
@@ -37,6 +38,7 @@ export default function SettingsPage() {
     const [offDayReason, setOffDayReason] = useState("");
     const [offDayType, setOffDayType] = useState<OffDayType>("HOLIDAY");
     const [isOffDayDialogOpen, setIsOffDayDialogOpen] = useState(false);
+    const router = useRouter();
 
     useEffect(() => {
         if (!company) return;
@@ -233,6 +235,7 @@ export default function SettingsPage() {
       
           await saveService(companyId, company, config, config.settings.services, token);
       
+          router.refresh();
           toast.success("Settings saved successfully!");
         } catch (error) {
           console.error("Failed to save settings:", error);
