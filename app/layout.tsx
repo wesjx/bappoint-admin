@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import { GeistSans } from 'geist/font/sans'
 import { GeistMono } from 'geist/font/mono'
-import './globals.css'
+import '@/app/globals.css'
 import { ClerkProvider } from '@clerk/nextjs'
 import { CompanyProvider } from '@/contexts/company-context'
 import { Toaster } from "sonner";
