@@ -221,6 +221,17 @@ export default function CreateManualAppointmentDialog({
     }
   }
 
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const selectedDay = selectedDate ? new Date(selectedDate) : null;
+  if (selectedDay) {
+    selectedDay.setHours(0, 0, 0, 0);
+  }
+
+  const isPastDate =
+    !!selectedDay && selectedDay.getTime() < today.getTime()
+
   return (
     <Dialog
       open={open}
@@ -233,7 +244,7 @@ export default function CreateManualAppointmentDialog({
       }}
     >
       <DialogTrigger asChild>
-        <Button disabled={disabled}>New manual appointment</Button>
+        <Button disabled={disabled || isPastDate}>New manual appointment</Button>
       </DialogTrigger>
 
       <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-2xl">
@@ -382,7 +393,7 @@ export default function CreateManualAppointmentDialog({
               Cancel
             </Button>
 
-            <Button type="submit" disabled={loading || !selectedTime}>
+            <Button type="submit" disabled={loading || !selectedTime || isPastDate}>
               {loading ? "Creating..." : "Create appointment"}
             </Button>
           </div>
