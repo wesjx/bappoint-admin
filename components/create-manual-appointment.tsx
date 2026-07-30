@@ -28,7 +28,7 @@ import {
 type Props = {
   selectedDate: Date;
   onCreated: () => Promise<void> | void;
-  disabled?: boolean
+  disabled?: boolean;
 };
 
 function formatDateToApi(date: Date): string {
@@ -58,10 +58,18 @@ function extractTimeLabel(value?: string) {
   return value;
 }
 
+function isSameDay(dateA: Date, dateB: Date) {
+  return (
+    dateA.getFullYear() === dateB.getFullYear() &&
+    dateA.getMonth() === dateB.getMonth() &&
+    dateA.getDate() === dateB.getDate()
+  );
+}
+
 export default function CreateManualAppointmentDialog({
   selectedDate,
   onCreated,
-  disabled
+  disabled,
 }: Props) {
   const { getToken } = useAuth();
   const { company } = useCompany();
@@ -91,6 +99,38 @@ export default function CreateManualAppointmentDialog({
       .filter((service) => selectedServices.includes(String(service.id)))
       .reduce((acc, service) => acc + Number(service.price), 0);
   }, [services, selectedServices]);
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const selectedDay = new Date(selectedDate);
+  selectedDay.setHours(0, 0, 0, 0);
+
+  const isPastDate = selectedDay.getTime() < today.getTime();
+
+  const filteredAvailableTimes = useMemo(() => {
+    const now = new Date();
+
+    if (!isSameDay(selectedDate, now)) {
+      return availableTimes;
+    }
+
+    return availableTimes.filter((slot) => {
+      const rawTime = extractTimeLabel(slot.start);
+      const normalizedTime = rawTime.slice(0, 5);
+
+      const [hours, minutes] = normalizedTime.split(":").map(Number);
+
+      if (Number.isNaN(hours) || Number.isNaN(minutes)) {
+        return false;
+      }
+
+      const slotDate = new Date(selectedDate);
+      slotDate.setHours(hours, minutes, 0, 0);
+
+      return slotDate.getTime() >= now.getTime();
+    });
+  }, [availableTimes, selectedDate]);
 
   function toggleService(serviceId: string) {
     setSelectedServices((current) =>
@@ -132,15 +172,6 @@ export default function CreateManualAppointmentDialog({
         if (cancelled) return;
 
         setAvailableTimes(data);
-
-        const stillExists = data.some((slot) => {
-          const time = extractTimeLabel(slot.start).slice(0, 5);
-          return time === selectedTime;
-        });
-
-        if (!stillExists) {
-          setSelectedTime("");
-        }
       } catch (error) {
         if (cancelled) return;
 
@@ -163,13 +194,29 @@ export default function CreateManualAppointmentDialog({
     return () => {
       cancelled = true;
     };
-  }, [open, company?.id, selectedDateString, selectedServices, selectedTime]);
+  }, [open, company?.id, selectedDateString, selectedServices]);
+
+  useEffect(() => {
+    const stillExists = filteredAvailableTimes.some((slot) => {
+      const time = extractTimeLabel(slot.start).slice(0, 5);
+      return time === selectedTime;
+    });
+
+    if (selectedTime && !stillExists) {
+      setSelectedTime("");
+    }
+  }, [filteredAvailableTimes, selectedTime]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
 
     if (!company?.id) {
       toast.error("Company not found.");
+      return;
+    }
+
+    if (isPastDate) {
+      toast.error("It is not possible to create appointments in past dates.");
       return;
     }
 
@@ -221,16 +268,11 @@ export default function CreateManualAppointmentDialog({
     }
   }
 
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-
-  const selectedDay = selectedDate ? new Date(selectedDate) : null;
-  if (selectedDay) {
-    selectedDay.setHours(0, 0, 0, 0);
-  }
-
-  const isPastDate =
-    !!selectedDay && selectedDay.getTime() < today.getTime()
+  const isSubmitDisabled =
+    loading ||
+    !selectedTime ||
+    isPastDate ||
+    selectedServices.length === 0;
 
   return (
     <Dialog
@@ -351,19 +393,21 @@ export default function CreateManualAppointmentDialog({
 
             {!loadingTimes &&
               !availableTimesError &&
-              availableTimes.length === 0 && (
+              filteredAvailableTimes.length === 0 && (
                 <div className="rounded-md border bg-white p-4">
                   <p className="text-sm text-muted-foreground">
-                    No available times for this date.
+                    {isSameDay(selectedDate, new Date())
+                      ? "No available times from now onward for today."
+                      : "No available times for this date."}
                   </p>
                 </div>
               )}
 
             {!loadingTimes &&
               !availableTimesError &&
-              availableTimes.length > 0 && (
+              filteredAvailableTimes.length > 0 && (
                 <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-                  {availableTimes.map((slot) => {
+                  {filteredAvailableTimes.map((slot) => {
                     const rawTime = extractTimeLabel(slot.start);
                     const normalizedTime = rawTime.slice(0, 5);
                     const isSelected = selectedTime === normalizedTime;
@@ -393,7 +437,7 @@ export default function CreateManualAppointmentDialog({
               Cancel
             </Button>
 
-            <Button type="submit" disabled={loading || !selectedTime || isPastDate}>
+            <Button type="submit" disabled={isSubmitDisabled}>
               {loading ? "Creating..." : "Create appointment"}
             </Button>
           </div>
