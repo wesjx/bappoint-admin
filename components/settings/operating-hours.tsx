@@ -4,7 +4,11 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { AppointmentInterval, OperatingHoursType, WeekDay } from "@/types/SettingsType";
+import {
+  AppointmentInterval,
+  OperatingHoursType,
+  WeekDay,
+} from "@/types/SettingsType";
 
 interface OperatingHoursProps {
   operatingHours: OperatingHoursType[];
@@ -100,16 +104,16 @@ export default function OperatingHours({
     const updated = operatingHours.map((item) =>
       item.weekday === weekday
         ? {
-          ...item,
-          [field]:
-            typeof value === "string" &&
+            ...item,
+            [field]:
+              typeof value === "string" &&
               (field === "startTime" ||
                 field === "endTime" ||
                 field === "lunchStartTime" ||
                 field === "lunchEndTime")
-              ? normalizeTimeForBackend(value)
-              : value,
-        }
+                ? normalizeTimeForBackend(value)
+                : value,
+          }
         : item
     );
 
@@ -125,82 +129,110 @@ export default function OperatingHours({
           return (
             <div
               key={day.key}
-              className="flex items-center space-x-4 p-4 border border-slate-200 rounded-lg"
+              className="rounded-lg border border-slate-200 p-4"
             >
-              <div className="w-32">
-                <Label className="font-medium">{day.label}</Label>
+              <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+                <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-center sm:justify-between lg:w-56 lg:flex-shrink-0 lg:flex-col lg:items-start">
+                  <Label className="text-base font-medium">{day.label}</Label>
+
+                  <div className="flex items-center gap-3">
+                    <Switch
+                      checked={schedule.isActive}
+                      onCheckedChange={(checked) =>
+                        updateOperatingHours(day.key, "isActive", checked)
+                      }
+                    />
+
+                    <span className="text-sm text-slate-500">
+                      {schedule.isActive ? "Open" : "Closed"}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="w-full">
+                  {schedule.isActive ? (
+                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+                      <div className="space-y-2">
+                        <Label className="text-sm">Start</Label>
+                        <Input
+                          type="time"
+                          value={formatTimeForInput(schedule.startTime)}
+                          onChange={(e) =>
+                            updateOperatingHours(
+                              day.key,
+                              "startTime",
+                              e.target.value
+                            )
+                          }
+                          className="w-full"
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label className="text-sm">End</Label>
+                        <Input
+                          type="time"
+                          value={formatTimeForInput(schedule.endTime)}
+                          onChange={(e) =>
+                            updateOperatingHours(
+                              day.key,
+                              "endTime",
+                              e.target.value
+                            )
+                          }
+                          className="w-full"
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label className="text-sm">Lunch start</Label>
+                        <Input
+                          type="time"
+                          value={formatTimeForInput(schedule.lunchStartTime)}
+                          onChange={(e) =>
+                            updateOperatingHours(
+                              day.key,
+                              "lunchStartTime",
+                              e.target.value
+                            )
+                          }
+                          className="w-full"
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label className="text-sm">Lunch end</Label>
+                        <Input
+                          type="time"
+                          value={formatTimeForInput(schedule.lunchEndTime)}
+                          onChange={(e) =>
+                            updateOperatingHours(
+                              day.key,
+                              "lunchEndTime",
+                              e.target.value
+                            )
+                          }
+                          className="w-full"
+                        />
+                      </div>
+                    </div>
+                  ) : (
+                    <Badge
+                      variant="secondary"
+                      className="bg-red-100 text-red-800"
+                    >
+                      Closed
+                    </Badge>
+                  )}
+                </div>
               </div>
-
-              <Switch
-                checked={schedule.isActive}
-                onCheckedChange={(checked) =>
-                  updateOperatingHours(day.key, "isActive", checked)
-                }
-              />
-
-              {schedule.isActive ? (
-                <>
-                  <div className="flex items-center space-x-2">
-                    <Label className="text-sm">Start:</Label>
-                    <Input
-                      type="time"
-                      value={formatTimeForInput(schedule.startTime)}
-                      onChange={(e) =>
-                        updateOperatingHours(day.key, "startTime", e.target.value)
-                      }
-                      className="w-32"
-                    />
-                  </div>
-
-                  <div className="flex items-center space-x-2">
-                    <Label className="text-sm">End:</Label>
-                    <Input
-                      type="time"
-                      value={formatTimeForInput(schedule.endTime)}
-                      onChange={(e) =>
-                        updateOperatingHours(day.key, "endTime", e.target.value)
-                      }
-                      className="w-32"
-                    />
-                  </div>
-
-                  <div className="flex items-center space-x-2">
-                    <Label className="text-sm">Lunch start:</Label>
-                    <Input
-                      type="time"
-                      value={formatTimeForInput(schedule.lunchStartTime)}
-                      onChange={(e) =>
-                        updateOperatingHours(day.key, "lunchStartTime", e.target.value)
-                      }
-                      className="w-32"
-                    />
-                  </div>
-
-                  <div className="flex items-center space-x-2">
-                    <Label className="text-sm">Lunch end:</Label>
-                    <Input
-                      type="time"
-                      value={formatTimeForInput(schedule.lunchEndTime)}
-                      onChange={(e) =>
-                        updateOperatingHours(day.key, "lunchEndTime", e.target.value)
-                      }
-                      className="w-32"
-                    />
-                  </div>
-
-                </>
-              ) : (
-                <Badge variant="secondary" className="bg-red-100 text-red-800">
-                  Closed
-                </Badge>
-              )}
             </div>
           );
         })}
       </div>
 
-      <div className="pt-6 border-t border-slate-200">
-        <div className="flex items-center gap-4">
+      <div className="border-t border-slate-200 pt-6">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <Label className="font-medium">Appointment Interval:</Label>
 
           <select
@@ -208,7 +240,7 @@ export default function OperatingHours({
             onChange={(e) =>
               onChangeAppointmentInterval(e.target.value as AppointmentInterval)
             }
-            className="h-10 rounded-md border border-slate-300 px-3 text-sm"
+            className="h-10 w-full rounded-md border border-slate-300 px-3 text-sm sm:w-auto sm:min-w-40"
           >
             <option value="MINUTES_15">15 min</option>
             <option value="MINUTES_30">30 min</option>
